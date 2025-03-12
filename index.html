@@ -8,86 +8,129 @@
     <link rel="stylesheet" href="styles.css">
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f4f4f4;
+            background: linear-gradient(to right, #eef2f3, #8e9eab);
             color: #333;
+            line-height: 1.6;
         }
         header {
-            background: #007bff;
+            background: linear-gradient(to right, #00509e, #003366);
             color: white;
-            padding: 15px;
+            padding: 20px;
             text-align: center;
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+        nav {
+            text-align: center;
+            background: #0073e6;
+            padding: 10px 0;
         }
         nav ul {
             list-style: none;
             padding: 0;
+            margin: 0;
         }
         nav ul li {
             display: inline;
-            margin: 0 15px;
+            margin: 0 20px;
         }
         nav ul li a {
             color: white;
             text-decoration: none;
+            font-size: 1.1rem;
             font-weight: bold;
+            transition: opacity 0.3s;
+        }
+        nav ul li a:hover {
+            opacity: 0.7;
+        }
+        .container {
+            width: 80%;
+            margin: 40px auto;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
         }
         section {
-            padding: 20px;
-            text-align: center;
             background: white;
-            margin: 20px auto;
-            width: 80%;
+            padding: 30px;
             border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .feature-box {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+        }
+        .feature {
+            width: 30%;
+            background: #f4f4f4;
+            padding: 20px;
+            border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
         }
         footer {
-            background: #007bff;
+            background: linear-gradient(to right, #00509e, #003366);
             color: white;
             text-align: center;
-            padding: 10px;
-            position: fixed;
-            bottom: 0;
-            width: 100%;
+            padding: 15px;
+            font-size: 0.9rem;
+            position: relative;
+            margin-top: 40px;
         }
     </style>
 </head>
 <body>
     <header>
-        <h1>Interview Prep App</h1>
-        <nav>
-            <ul>
-                <li><a href="#home">Home</a></li>
-                <li><a href="#questions">Questions</a></li>
-                <li><a href="#resources">Resources</a></li>
-                <li><a href="#contact">Contact</a></li>
-            </ul>
-        </nav>
+        Interview Prep App
     </header>
-    
-    <section id="home">
-        <h2>Welcome to the Ultimate Interview Prep</h2>
-        <p>Practice your technical and behavioral questions to ace your next interview.</p>
-    </section>
-    
-    <section id="questions">
-        <h2>Practice Questions</h2>
-        <p>Get a list of common interview questions and test yourself.</p>
-    </section>
-    
-    <section id="resources">
-        <h2>Resources</h2>
-        <p>Find articles, guides, and videos to help you prepare better.</p>
-    </section>
-    
-    <section id="contact">
-        <h2>Contact Us</h2>
-        <p>Have any questions? Reach out to us!</p>
-    </section>
-    
+    <nav>
+        <ul>
+            <li><a href="#home">Home</a></li>
+            <li><a href="#questions">Questions</a></li>
+            <li><a href="#resources">Resources</a></li>
+            <li><a href="#contact">Contact</a></li>
+        </ul>
+    </nav>
+    <div class="container">
+        <section id="home">
+            <h2>Welcome to the Ultimate Interview Prep</h2>
+            <p>Practice technical and behavioral questions to excel in your next interview.</p>
+            <div class="feature-box">
+                <div class="feature">
+                    <h3>Mock Interviews</h3>
+                    <p>Simulate real interviews with AI-powered feedback.</p>
+                </div>
+                <div class="feature">
+                    <h3>Question Bank</h3>
+                    <p>Access a comprehensive list of interview questions.</p>
+                </div>
+                <div class="feature">
+                    <h3>Expert Tips</h3>
+                    <p>Learn from top professionals in your industry.</p>
+                </div>
+            </div>
+        </section>
+        <section id="questions">
+            <h2>Practice Questions</h2>
+            <p>Explore a list of common interview questions and test your knowledge.</p>
+        </section>
+        <section id="resources">
+            <h2>Resources</h2>
+            <p>Access articles, guides, and videos curated to boost your preparation.</p>
+        </section>
+        <section id="contact">
+            <h2>Contact Us</h2>
+            <p>Need help? Reach out to our team for support.</p>
+        </section>
+    </div>
     <footer>
-        <p>&copy; 2025 Interview Prep App. All rights reserved.</p>
+        &copy; 2025 Interview Prep App. All rights reserved.
     </footer>
 </body>
 </html>

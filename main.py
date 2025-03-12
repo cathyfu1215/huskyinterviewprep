@@ -1,46 +1,46 @@
 import gradio as gr
 import numpy as np
-import pandas as pd
-import openai
 import speech_recognition as sr
-import matplotlib.pyplot as plt
-import plotly.graph_objects as go
-from fpdf import FPDF
-import sqlite3
-from datetime import datetime
 
-import os
-from dotenv import load_dotenv
+def get_question_hints():
+    """Return a dictionary of questions and their hints"""
+    return {
+        "Tell me about yourself": 
+            "Focus on your professional background, key achievements, and why you're a good fit for this role.",
+        "What's your greatest strength?": 
+            "Choose a strength relevant to the job. Provide specific examples that demonstrate this strength.",
+        "Why do you want this job?": 
+            "Connect your skills and career goals to the role and company. Show you've done your research.",
+        "Where do you see yourself in 5 years?": 
+            "Discuss your career goals and how they align with the company's growth trajectory.",
+        "Why do you want to work at our company?": 
+            "Demonstrate your knowledge of the company's values, culture, and mission.",
+        "Tell me about your most relevant experience for this role": 
+            "Focus on experience that directly relates to the job requirements. Use the STAR method."
+    }
 
-# Load environment variables from .env file
-load_dotenv()
-
-# Access the API key
-openai_api_key = os.getenv("OPENAI_API_KEY")
-
-# Use it in OpenAI
-import openai
-openai.api_key = openai_api_key
-
-print("OpenAI API Key loaded successfully!")
-
-def generate_questions(resume, cover_letter, job_description, company_info):
-    # Simulate generating questions (replace with actual OpenAI call)
+def generate_sample_questions(job_desc, company_info, resume):
+    """Simulate generating interview questions based on all inputs"""
+    # Basic questions
     questions = [
         "Tell me about yourself",
-        "Why are you interested in this position?",
         "What's your greatest strength?",
-        "Describe a challenging situation at work",
-        "Why do you want to work for our company?",
-        "Where do you see yourself in 5 years?",
-        "Tell me about a project you're proud of",
-        "How do you handle conflict?",
-        "What's your leadership style?",
-        "What questions do you have for us?"
+        "Why do you want this job?",
+        "Where do you see yourself in 5 years?"
     ]
+    
+    # Add company-specific question if company info is provided
+    if company_info.strip():
+        questions.append(f"Why do you want to work at our company?")
+    
+    # Add experience-related question if resume is provided
+    if resume.strip():
+        questions.append("Tell me about your most relevant experience for this role")
+    
     return questions
 
 def speech_to_text(audio_path):
+    """Convert speech to text"""
     recognizer = sr.Recognizer()
     with sr.AudioFile(audio_path) as source:
         audio = recognizer.record(source)
@@ -50,112 +50,31 @@ def speech_to_text(audio_path):
     except:
         return "Speech recognition failed. Please try again."
 
-def analyze_answer(question, answer, resume, job_description, company_info):
-    # Simulate analysis (replace with actual AI analysis)
+def analyze_answer(answer):
+    """Simple mock analysis of the answer"""
+    # Simulate scoring
     scores = {
         "clarity": np.random.uniform(0.6, 1.0),
         "confidence": np.random.uniform(0.6, 1.0),
-        "situation": np.random.uniform(0.6, 1.0),
-        "task": np.random.uniform(0.6, 1.0),
-        "action": np.random.uniform(0.6, 1.0),
-        "result": np.random.uniform(0.6, 1.0)
+        "relevance": np.random.uniform(0.6, 1.0)
     }
     
-    recommendations = "Focus on providing more specific examples and quantifiable results."
-    model_answer = f"Model answer for: {question}\nThis is a sample model answer based on the provided resume and job description."
-    
-    return scores, recommendations, model_answer
+    feedback = "Sample feedback: Try to be more specific and provide concrete examples."
+    return scores, feedback
 
-def create_radar_chart(scores):
-    categories = list(scores.keys())
-    values = list(scores.values())
-    values.append(values[0])
-    categories.append(categories[0])
-    
-    fig = go.Figure(data=[
-        go.Scatterpolar(
-            r=values,
-            theta=categories,
-            fill='toself'
-        )
-    ])
-    
-    fig.update_layout(
-        polar=dict(
-            radialaxis=dict(
-                visible=True,
-                range=[0, 1]
-            )
-        ),
-        showlegend=False
-    )
-    return fig
+def generate_model_answer(question, user_answer):
+    """Generate a model answer based on the question and user's response"""
+    # This is a mock implementation - in a real app, you might use an LLM
+    model_answers = {
+        "Tell me about yourself": 
+            "Hi, I'm [Name], a [profession] with [X] years of experience in [industry]. I've developed expertise in [key skills] through my work at [previous companies]. In my current role at [company], I [key achievement]. I'm particularly passionate about [relevant interest], which aligns well with this position.",
+        "What's your greatest strength?":
+            "One of my greatest strengths is [specific strength]. For example, in my previous role at [company], I [specific example that demonstrates the strength]. This resulted in [quantifiable outcome]. I believe this strength would be particularly valuable in this position because [reason].",
+    }
+    return model_answers.get(question, "Model answer not available for this question.")
 
-def save_to_database(data):
-    conn = sqlite3.connect('interviews.db')
-    cursor = conn.cursor()
-    
-    # Create table if it doesn't exist
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS interviews
-        (id INTEGER PRIMARY KEY AUTOINCREMENT,
-         timestamp TEXT,
-         resume TEXT,
-         job_description TEXT,
-         company_info TEXT,
-         qa_pairs TEXT)
-    ''')
-    
-    cursor.execute('''
-        INSERT INTO interviews (timestamp, resume, job_description, company_info, qa_pairs)
-        VALUES (?, ?, ?, ?, ?)
-    ''', (datetime.now().isoformat(), data['resume'], data['job_description'],
-          data['company_info'], str(data['qa_pairs'])))
-    
-    conn.commit()
-    conn.close()
-
-def create_pdf(data):
-    pdf = FPDF()
-    pdf.add_page()
-    
-    # Title
-    pdf.set_font("Arial", "B", 16)
-    pdf.cell(200, 10, txt="Interview Preparation Report", ln=True, align='C')
-    pdf.ln(10)
-    
-    # Content
-    pdf.set_font("Arial", size=12)
-    
-    # Interview Q&A Section
-    pdf.set_font("Arial", "B", 14)
-    pdf.cell(200, 10, txt="Interview Questions and Answers", ln=True)
-    pdf.ln(5)
-    
-    pdf.set_font("Arial", size=12)
-    for qa in data['qa_pairs']:
-        # Question
-        pdf.set_font("Arial", "B", 12)
-        pdf.multi_cell(0, 10, txt=f"Q: {qa['question']}")
-        
-        # Answer
-        pdf.set_font("Arial", size=12)
-        pdf.multi_cell(0, 10, txt=f"A: {qa['answer']}")
-        pdf.ln(5)
-    
-    pdf_path = "interview_report.pdf"
-    pdf.output(pdf_path)
-    return pdf_path
-
-def create_interface():
-    # Shared state
-    state = gr.State({
-        "questions": [],
-        "selected_questions": [],
-        "current_question_index": 0,
-        "answers": {},
-        "analysis": {}
-    })
+def create_demo():
+    question_hints = get_question_hints()
     
     with gr.Blocks(css="""
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -249,134 +168,174 @@ def create_interface():
             position: relative;
             z-index: 1;
         }
-    """) as app:
-        # Header
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            color: #4f46e5;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+    """) as demo:
+        # Stylish Header
         with gr.Column(elem_id="header-container"):
             gr.HTML(
                 """
                 <div id="header-badge">
                     <span id="header-badge-dot"></span>
-                    <span style="color: white; font-size: 14px;">AI-Powered Interview Prep Training</span>
+                    <span style="color: white; font-size: 14px;">AI-Powered Interview Prep</span>
                 </div>
                 <h1 id="header-title">Husky Interview Prep</h1>
                 <p id="header-subtitle">Master Your Interview with Confidence</p>
                 """
             )
         
-        with gr.Tabs() as tabs:
-            with gr.Tab("Stage 1: Input Information", id="input"):
-                resume = gr.Textbox(label="Resume", lines=5)
-                cover_letter = gr.Textbox(label="Cover Letter", lines=5)
-                job_description = gr.Textbox(label="Job Description", lines=5)
-                company_info = gr.Textbox(label="Company Information", lines=3)
-                generate_btn = gr.Button("Generate Questions")
-                question_checkboxes = gr.CheckboxGroup(
-                    choices=[], 
-                    label="Select Questions",
-                    value=[]  # This will be populated with all questions selected by default
-                )
-                next_btn_1 = gr.Button("Proceed to Interview")
+        # Main Content
+        with gr.Column(elem_classes="container"):
+            gr.Markdown(
+                """### Step 1: Enter Your Information""",
+                elem_classes="section-title"
+            )
+            job_desc = gr.Textbox(
+                label="Job Description",
+                placeholder="Paste the job description here...",
+                lines=3
+            )
+            company_info = gr.Textbox(
+                label="Company Information",
+                placeholder="Enter information about the company...",
+                lines=2
+            )
+            resume = gr.Textbox(
+                label="Your Resume",
+                placeholder="Paste your resume or relevant experience here...",
+                lines=3
+            )
+            generate_btn = gr.Button("Generate Questions", variant="primary")
 
-            with gr.Tab("Stage 2: Interview Questions", id="interview"):
-                current_question = gr.Textbox(label="Current Question", interactive=False)
-                answer_hints = gr.Textbox(label="Hints for Answering", interactive=False)
-                with gr.Row():  # Group the recording components together
-                    audio_input = gr.Audio(sources=["microphone"], type="filepath")
-                    transcribed_text = gr.Textbox(label="Your Answer")
-                with gr.Row():  # Group the buttons together
-                    save_answer_btn = gr.Button("Save Answer", variant="primary")
-                    skip_btn = gr.Button("Skip Question", variant="secondary")
-                    next_question_btn = gr.Button("Next Question", interactive=False)
-
-            # Stage 3: Analysis
-            with gr.Tab("Stage 3: Analysis"):
-                question_selector = gr.Slider(minimum=0, maximum=1, step=1, label="Question Number")
-                analysis_question = gr.Textbox(label="Question")
-                user_answer = gr.Textbox(label="Your Answer")
-                radar_plot = gr.Plot(label="Analysis Radar")
-                recommendations = gr.Textbox(label="Recommendations")
-                model_answer = gr.Textbox(label="Model Answer")
-
-            # Stage 4: Export
-            with gr.Tab("Stage 4: Export"):
-                export_pdf_btn = gr.Button("Export to PDF")
-                download_btn = gr.File(label="Download Report")
-
-        # Event handlers
-        def proceed_to_interview(selected_questions, state_dict):
-            if not selected_questions:
-                gr.Warning("Please select at least one question")
-                return {
-                    "questions": [],
-                    "selected_questions": [],
-                    "current_question_index": 0,
-                    "answers": {},
-                    "analysis": {}
-                }, "", "", "", True, True, False
-            
-            # Update state
-            new_state = {
-                "questions": state_dict.get("questions", []),
-                "selected_questions": selected_questions,
-                "current_question_index": 0,
-                "answers": {},
-                "analysis": {}
-            }
-            
-            # Get first question
-            current_q = selected_questions[0]
-            hint = f"Hint for question: {current_q}"
-            
-            return (
-                new_state,          # updated state
-                current_q,          # current question
-                hint,               # hint text
-                "",                 # clear answer textbox
-                True,               # save button interactive
-                True,               # skip button interactive
-                False               # next button interactive
+        with gr.Column(elem_classes="container"):
+            gr.Markdown(
+                """### Step 2: Practice Questions""",
+                elem_classes="section-title"
+            )
+            questions = gr.Radio(
+                choices=[],
+                label="Interview Questions",
+                info="Select a question to practice"
             )
 
-        next_btn_1.click(
-            proceed_to_interview,
-            inputs=[
-                question_checkboxes,
-                state
-            ],
-            outputs=[
-                state,
-                current_question,
-                answer_hints,
-                transcribed_text,
-                save_answer_btn,
-                skip_btn,
-                next_question_btn
-            ]
-        )
+        with gr.Column(elem_classes="container"):
+            gr.Markdown(
+                """### Step 3: Record Your Answer""",
+                elem_classes="section-title"
+            )
+            selected_question = gr.Textbox(
+                label="Current Question",
+                interactive=False
+            )
+            question_hint = gr.Textbox(
+                label="How to Answer",
+                interactive=False,
+                lines=2
+            )
+            with gr.Row():
+                audio_input = gr.Audio(
+                    sources=["microphone"],
+                    type="filepath",
+                    label="Record Your Answer"
+                )
+                answer_text = gr.Textbox(
+                    label="Your Answer (Transcribed)",
+                    lines=3
+                )
+            analyze_btn = gr.Button("Analyze Answer", variant="primary")
 
-        # Separate function for tab navigation
-        def switch_to_interview():
-            return gr.Tabs(selected=1)
+        with gr.Column(elem_classes="container"):
+            gr.Markdown(
+                """### Step 4: Review Analysis""",
+                elem_classes="section-title"
+            )
+            with gr.Row():
+                score_output = gr.Json(label="Scores")
+                feedback = gr.Textbox(
+                    label="Feedback",
+                    lines=2
+                )
 
-        # Add another click handler just for tab switching
-        next_btn_1.click(
-            switch_to_interview,
-            outputs=[tabs]
-        )
+        # Add new section for model answer
+        with gr.Column(elem_classes="container"):
+            gr.Markdown(
+                """### Step 5: Get Model Answer""",
+                elem_classes="section-title"
+            )
+            generate_model_btn = gr.Button("Generate Model Answer", variant="primary")
+            model_answer = gr.Textbox(
+                label="Model Answer",
+                lines=4,
+                interactive=False
+            )
 
-        # Event handler for generating questions
-        def update_questions(resume, cover_letter, job_description, company_info):
-            questions = generate_questions(resume, cover_letter, job_description, company_info)
-            return gr.CheckboxGroup(choices=questions, value=questions)
+        # Event handlers
+        def update_questions(job_desc, company_info, resume):
+            questions = generate_sample_questions(job_desc, company_info, resume)
+            return gr.Radio(choices=questions)
 
+        def update_selected_question(question):
+            if question:
+                hint = question_hints.get(question, "No hint available for this question.")
+                return question, hint
+            return "", ""
+
+        def process_answer(audio, answer):
+            if audio is not None:
+                answer = speech_to_text(audio)
+            scores, feedback = analyze_answer(answer)
+            return scores, feedback
+
+        def get_model_answer(question, user_answer):
+            return generate_model_answer(question, user_answer)
+
+        # Event bindings
         generate_btn.click(
             update_questions,
-            inputs=[resume, cover_letter, job_description, company_info],
-            outputs=[question_checkboxes]
+            inputs=[job_desc, company_info, resume],
+            outputs=[questions]
         )
 
-    return app
+        questions.change(
+            update_selected_question,
+            inputs=[questions],
+            outputs=[selected_question, question_hint]
+        )
+
+        audio_input.change(
+            speech_to_text,
+            inputs=[audio_input],
+            outputs=[answer_text]
+        )
+
+        analyze_btn.click(
+            process_answer,
+            inputs=[audio_input, answer_text],
+            outputs=[score_output, feedback]
+        )
+
+        # Add new event binding for model answer
+        generate_model_btn.click(
+            get_model_answer,
+            inputs=[selected_question, answer_text],
+            outputs=[model_answer]
+        )
+
+    return demo
 
 if __name__ == "__main__":
-    interface = create_interface()
-    interface.launch()
+    demo = create_demo()
+    demo.launch()

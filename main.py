@@ -1,6 +1,7 @@
 import gradio as gr
 import numpy as np
 import speech_recognition as sr
+import re
 
 def get_question_hints():
     """Return a dictionary of questions and their hints"""
@@ -72,6 +73,34 @@ def generate_model_answer(question, user_answer):
             "One of my greatest strengths is [specific strength]. For example, in my previous role at [company], I [specific example that demonstrates the strength]. This resulted in [quantifiable outcome]. I believe this strength would be particularly valuable in this position because [reason].",
     }
     return model_answers.get(question, "Model answer not available for this question.")
+
+def analyze_information(job_desc, company_info):
+    """Analyze the job description and company information to extract values, tech skills, soft skills, and job duties"""
+    company_values = "Not found"
+    tech_skills = "Not found"
+    soft_skills = "Not found"
+    job_duties = "Not found"
+    
+    # Extract company values from company information
+    values_match = re.search(r'values: (.*)', company_info, re.IGNORECASE)
+    if values_match:
+        company_values = values_match.group(1)
+    
+    # Extract tech skills and soft skills from job description
+    tech_skills_match = re.search(r'tech skills: (.*)', job_desc, re.IGNORECASE)
+    if tech_skills_match:
+        tech_skills = tech_skills_match.group(1)
+    
+    soft_skills_match = re.search(r'soft skills: (.*)', job_desc, re.IGNORECASE)
+    if soft_skills_match:
+        soft_skills = soft_skills_match.group(1)
+    
+    # Extract job duties from job description
+    job_duties_match = re.search(r'job duties: (.*)', job_desc, re.IGNORECASE)
+    if job_duties_match:
+        job_duties = job_duties_match.group(1)
+    
+    return company_values, tech_skills, soft_skills, job_duties
 
 def create_demo():
     question_hints = get_question_hints()
@@ -218,7 +247,28 @@ def create_demo():
                 placeholder="Paste your resume or relevant experience here...",
                 lines=3
             )
-            generate_btn = gr.Button("Generate Questions", variant="primary")
+            analyze_info_btn = gr.Button("Analyze Information", variant="primary")
+            company_values = gr.Textbox(
+                label="Company Values",
+                placeholder="Waiting for parsing the information...",
+                lines=2
+            )
+            tech_skills = gr.Textbox(
+                label="Tech Skills",
+                placeholder="Waiting for parsing the information...",
+                lines=2
+            )
+            soft_skills = gr.Textbox(
+                label="Soft Skills",
+                placeholder="Waiting for parsing the information...",
+                lines=2
+            )
+            job_duties = gr.Textbox(
+                label="Job Duties",
+                placeholder="Waiting for parsing the information...",
+                lines=2
+            )
+            generate_btn = gr.Button("Generate Interview Questions", variant="primary")
 
         with gr.Column(elem_classes="container"):
             gr.Markdown(
@@ -302,6 +352,10 @@ def create_demo():
         def get_model_answer(question, user_answer):
             return generate_model_answer(question, user_answer)
 
+        def analyze_info(job_desc, company_info):
+            company_values, tech_skills, soft_skills, job_duties = analyze_information(job_desc, company_info)
+            return company_values, tech_skills, soft_skills, job_duties
+
         # Event bindings
         generate_btn.click(
             update_questions,
@@ -332,6 +386,13 @@ def create_demo():
             get_model_answer,
             inputs=[selected_question, answer_text],
             outputs=[model_answer]
+        )
+
+        # Add new event binding for analyze information
+        analyze_info_btn.click(
+            analyze_info,
+            inputs=[job_desc, company_info],
+            outputs=[company_values, tech_skills, soft_skills, job_duties]
         )
 
     return demo

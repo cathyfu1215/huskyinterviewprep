@@ -1,7 +1,149 @@
 import gradio as gr
 import numpy as np
 import speech_recognition as sr
+from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
+import requests
+from together import Together
+import json
 import re
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+# Initialize Together client
+your_api_key = os.getenv("TOGETHER_API_KEY")
+client = Together(api_key=your_api_key)
+
+def prompt_llm(prompt, show_cost=False):
+    """Function to send prompt to an LLM via the Together API."""
+    model = "meta-llama/Meta-Llama-3-8B-Instruct-Lite"
+    tokens = len(prompt.split())
+
+    if show_cost:
+        print(f"\nNumber of tokens: {tokens}")
+        cost = (0.1 / 1_000_000) * tokens
+        print(f"Estimated cost for {model}: ${cost:.10f}\n")
+
+    response = client.chat.completions.create(
+        model=model,
+        messages=[{"role": "user", "content": prompt}],
+    )
+    return response.choices[0].message.content
+
+class Analyzer:
+    def __init__(self):
+        self.encoder = SentenceTransformer("all-MiniLM-L6-v2")
+
+    def parse_job_info(self, job_description, company_values):
+        """Extracts key insights and fills relevant fields."""
+        prompt = f"""
+        SYSTEM: You are an expert job description analyzer. Extract relevant details from the provided job description and company values.
+        
+        INSTRUCTIONS:
+        - Identify key company values.
+        - Extract essential technical skills required.
+        - Extract necessary soft skills.
+        - Summarize key job duties.
+        
+        JOB DESCRIPTION: {job_description}
+        COMPANY VALUES: {company_values}
+        """
+        response = prompt_llm(prompt)
+
+        # Print the response for debugging
+        # print("LLM Response:", response)
+        
+        # Use regular expressions to extract the relevant sections
+        company_values_match = re.search(r"\*\*Key Company Values:\*\*(.*?)\*\*Essential Technical Skills:\*\*", response, re.DOTALL)
+        tech_skills_match = re.search(r"\*\*Essential Technical Skills:\*\*(.*?)\*\*Necessary Soft Skills:\*\*", response, re.DOTALL)
+        soft_skills_match = re.search(r"\*\*Necessary Soft Skills:\*\*(.*?)\*\*Summary of Key Job Duties:\*\*", response, re.DOTALL)
+        job_duties_match = re.search(r"\*\*Summary of Key Job Duties:\*\*(.*)", response, re.DOTALL)
+
+        company_values = company_values_match.group(1).strip() if company_values_match else "Not found"
+        tech_skills = tech_skills_match.group(1).strip() if tech_skills_match else "Not found"
+        soft_skills = soft_skills_match.group(1).strip() if soft_skills_match else "Not found"
+        job_duties = job_duties_match.group(1).strip() if job_duties_match else "Not found"
+
+        parsed_info = {
+            "company_values": company_values,
+            "tech_skills": tech_skills,
+            "soft_skills": soft_skills,
+            "job_duties": job_duties
+        }
+        return parsed_info
+
+class Drafter:
+    def generate_answer(self, question, company_info, job_description, resume, voice_answer):
+        """Drafts a model answer based on user inputs."""
+        prompt = f"""
+        SYSTEM: You are a professional interview coach. Draft a strong, structured answer based on the following inputs:
+        
+        INSTRUCTIONS:
+        - Ensure clarity and logical flow.
+        - Incorporate company values where relevant.
+        - Highlight technical and soft skills from the job description.
+        - Improve conciseness while maintaining completeness.
+        - Maintain a confident and positive tone.
+        
+        QUESTION: {question}
+        COMPANY INFO: {company_info}
+        JOB DESCRIPTION: {job_description}
+        USER RESUME: {resume}
+        USER VOICE ANSWER: {voice_answer}
+        """
+        return prompt_llm(prompt)
+
+class Evaluator:
+    def evaluate_answer(self, voice_answer, job_description, company_values):
+        """Evaluates the user's voice answer based on clarity, relevance, and confidence."""
+        prompt = f"""
+        SYSTEM: You are an expert evaluator for interview responses. Assess the answer based on the following criteria:
+        
+        INSTRUCTIONS:
+        - Clarity: Is the response structured and easy to understand?
+        - Relevance: Does it address the job's required skills and reflect company values?
+        - Confidence: Does the tone convey certainty and professionalism?
+        - Provide constructive feedback and a score out of 10 for each category.
+        
+        USER VOICE ANSWER: {voice_answer}
+        JOB DESCRIPTION: {job_description}
+        COMPANY VALUES: {company_values}
+        """
+        return prompt_llm(prompt)
+
+class InterviewAgentManager:
+    def __init__(self):
+        self.analyzer = Analyzer()
+        self.drafter = Drafter()
+        self.evaluator = Evaluator()
+    
+    def process_interview(self, job_description, company_values, question, company_info, resume, voice_answer):
+        """Manages the full process from analysis to evaluation."""
+        parsed_info = self.analyzer.parse_job_info(job_description, company_values)
+        model_answer = self.drafter.generate_answer(question, company_info, job_description, resume, voice_answer)
+        evaluation = self.evaluator.evaluate_answer(voice_answer, job_description, company_values)
+        
+        return {
+            "parsed_info": parsed_info,
+            "model_answer": model_answer,
+            "evaluation": evaluation
+        }
+
+interview_manager = InterviewAgentManager()
+
+def analyze_info(job_desc, company_info):
+    parsed_info = interview_manager.analyzer.parse_job_info(job_desc, company_info)
+    return parsed_info
+
+def generate_model_answer(question, company_info, job_desc, resume, voice_answer):
+    return interview_manager.drafter.generate_answer(question, company_info, job_desc, resume, voice_answer)
+
+def evaluate_answer(voice_answer, job_desc, company_values):
+    return interview_manager.evaluator.evaluate_answer(voice_answer, job_desc, company_values)
+
+# The integration with Gradio should call these functions appropriately
 
 def get_question_hints():
     """Return a dictionary of questions and their hints"""
@@ -76,29 +218,13 @@ def generate_model_answer(question, user_answer):
 
 def analyze_information(job_desc, company_info):
     """Analyze the job description and company information to extract values, tech skills, soft skills, and job duties"""
-    company_values = "Not found"
-    tech_skills = "Not found"
-    soft_skills = "Not found"
-    job_duties = "Not found"
+    parsed_info = interview_manager.analyzer.parse_job_info(job_desc, company_info)
     
-    # Extract company values from company information
-    values_match = re.search(r'values: (.*)', company_info, re.IGNORECASE)
-    if values_match:
-        company_values = values_match.group(1)
-    
-    # Extract tech skills and soft skills from job description
-    tech_skills_match = re.search(r'tech skills: (.*)', job_desc, re.IGNORECASE)
-    if tech_skills_match:
-        tech_skills = tech_skills_match.group(1)
-    
-    soft_skills_match = re.search(r'soft skills: (.*)', job_desc, re.IGNORECASE)
-    if soft_skills_match:
-        soft_skills = soft_skills_match.group(1)
-    
-    # Extract job duties from job description
-    job_duties_match = re.search(r'job duties: (.*)', job_desc, re.IGNORECASE)
-    if job_duties_match:
-        job_duties = job_duties_match.group(1)
+    # Assuming the parsed_info is a dictionary with keys: 'company_values', 'tech_skills', 'soft_skills', 'job_duties'
+    company_values = parsed_info.get('company_values', 'Not found')
+    tech_skills = parsed_info.get('tech_skills', 'Not found')
+    soft_skills = parsed_info.get('soft_skills', 'Not found')
+    job_duties = parsed_info.get('job_duties', 'Not found')
     
     return company_values, tech_skills, soft_skills, job_duties
 
@@ -357,6 +483,7 @@ def create_demo():
             return company_values, tech_skills, soft_skills, job_duties
 
         # Event bindings
+      
         generate_btn.click(
             update_questions,
             inputs=[job_desc, company_info, resume],
@@ -399,4 +526,4 @@ def create_demo():
 
 if __name__ == "__main__":
     demo = create_demo()
-    demo.launch()
+    demo.launch(share=True)

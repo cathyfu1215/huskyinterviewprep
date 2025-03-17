@@ -112,17 +112,18 @@ class Evaluator:
         COMPANY VALUES: {company_values}
         """
         response = prompt_llm(prompt)
+        print("LLM Response:", response)
+
         
         # Extract scores and feedback from the response
         clarity_match = re.search(r"Clarity: (\d+)/10", response)
         relevance_match = re.search(r"Relevance: (\d+)/10", response)
         confidence_match = re.search(r"Confidence: (\d+)/10", response)
-        feedback_match = re.search(r"Feedback: (.*)", response)
         
         clarity_score = int(clarity_match.group(1)) if clarity_match else 0
         relevance_score = int(relevance_match.group(1)) if relevance_match else 0
         confidence_score = int(confidence_match.group(1)) if confidence_match else 0
-        feedback = feedback_match.group(1) if feedback_match else "No feedback provided."
+        feedback = response
         
         scores = {
             "clarity": clarity_score,

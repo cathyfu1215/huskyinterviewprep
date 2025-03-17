@@ -111,7 +111,26 @@ class Evaluator:
         JOB DESCRIPTION: {job_description}
         COMPANY VALUES: {company_values}
         """
-        return prompt_llm(prompt)
+        response = prompt_llm(prompt)
+        
+        # Extract scores and feedback from the response
+        clarity_match = re.search(r"Clarity: (\d+)/10", response)
+        relevance_match = re.search(r"Relevance: (\d+)/10", response)
+        confidence_match = re.search(r"Confidence: (\d+)/10", response)
+        feedback_match = re.search(r"Feedback: (.*)", response)
+        
+        clarity_score = int(clarity_match.group(1)) if clarity_match else 0
+        relevance_score = int(relevance_match.group(1)) if relevance_match else 0
+        confidence_score = int(confidence_match.group(1)) if confidence_match else 0
+        feedback = feedback_match.group(1) if feedback_match else "No feedback provided."
+        
+        scores = {
+            "clarity": clarity_score,
+            "relevance": relevance_score,
+            "confidence": confidence_score
+        }
+        
+        return scores, feedback
 
 class InterviewAgentManager:
     def __init__(self):
@@ -227,6 +246,15 @@ def analyze_information(job_desc, company_info):
     job_duties = parsed_info.get('job_duties', 'Not found')
     
     return company_values, tech_skills, soft_skills, job_duties
+
+# Global variables to store persistent inputs
+persistent_job_desc = ""
+persistent_company_info = ""
+persistent_resume = ""
+persistent_company_values = ""
+persistent_tech_skills = ""
+persistent_soft_skills = ""
+persistent_job_duties = ""
 
 def create_demo():
     question_hints = get_question_hints()
@@ -439,7 +467,7 @@ def create_demo():
                 elem_classes="section-title"
             )
             with gr.Row():
-                score_output = gr.Json(label="Scores")
+                score_output = gr.HTML(label="Scores")
                 feedback = gr.Textbox(
                     label="Feedback",
                     lines=2
@@ -460,6 +488,10 @@ def create_demo():
 
         # Event handlers
         def update_questions(job_desc, company_info, resume):
+            global persistent_job_desc, persistent_company_info, persistent_resume
+            persistent_job_desc = job_desc
+            persistent_company_info = company_info
+            persistent_resume = resume
             questions = generate_sample_questions(job_desc, company_info, resume)
             return gr.Radio(choices=questions)
 
@@ -469,18 +501,26 @@ def create_demo():
                 return question, hint
             return "", ""
 
-        def process_answer(audio, answer):
+        def process_answer(audio, answer, job_desc, company_values):
             if audio is not None:
                 answer = speech_to_text(audio)
-            scores, feedback = analyze_answer(answer)
-            return scores, feedback
+            scores, feedback = interview_manager.evaluator.evaluate_answer(answer, job_desc, company_values)
+            stars = lambda score: "⭐" * score + "☆" * (10 - score)
+            scores_html = f"""
+            <div>
+                <p><strong>Clarity:</strong> {stars(scores['clarity'])}</p>
+                <p><strong>Relevance:</strong> {stars(scores['relevance'])}</p>
+                <p><strong>Confidence:</strong> {stars(scores['confidence'])}</p>
+            </div>
+            """
+            return scores_html, feedback
 
         def get_model_answer(question, user_answer):
             return generate_model_answer(question, user_answer)
 
         def analyze_info(job_desc, company_info):
-            company_values, tech_skills, soft_skills, job_duties = analyze_information(job_desc, company_info)
-            return company_values, tech_skills, soft_skills, job_duties
+            parsed_info = interview_manager.analyzer.parse_job_info(job_desc, company_info)
+            return parsed_info['company_values'], parsed_info['tech_skills'], parsed_info['soft_skills'], parsed_info['job_duties']
 
         # Event bindings
       
@@ -504,7 +544,7 @@ def create_demo():
 
         analyze_btn.click(
             process_answer,
-            inputs=[audio_input, answer_text],
+            inputs=[audio_input, answer_text, job_desc, company_values],
             outputs=[score_output, feedback]
         )
 

@@ -9,6 +9,8 @@ import json
 import re
 from dotenv import load_dotenv
 import os
+import tempfile
+from datetime import datetime
 
 load_dotenv()
 
@@ -247,6 +249,84 @@ persistent_tech_skills = ""
 persistent_soft_skills = ""
 persistent_job_duties = ""
 
+def save_to_html(job_desc, company_info, resume, company_values, tech_skills, soft_skills, job_duties, selected_question, answer_text, feedback, model_answer):
+    """Generate HTML content for download."""
+    # Get current date and time
+    current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    file_name = f"interview_summary_{current_time}.html"
+
+    html_content = f"""
+    <html>
+    <head>
+        <title>Interview Prep Summary</title>
+        <style>
+            body {{
+                font-family: 'Arial', sans-serif;
+                margin: 0;
+                padding: 20px;
+                background-color: #f4f4f9;
+                color: #333;
+            }}
+            h1, h2 {{
+                color: #4f46e5;
+            }}
+            h1 {{
+                text-align: center;
+                margin-bottom: 40px;
+            }}
+            h2 {{
+                margin-top: 30px;
+                border-bottom: 2px solid #ddd;
+                padding-bottom: 10px;
+            }}
+            p, ul {{
+                line-height: 1.6;
+            }}
+            ul {{
+                list-style-type: none;
+                padding: 0;
+            }}
+            li {{
+                background: #fff;
+                margin: 5px 0;
+                padding: 10px;
+                border-radius: 5px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            }}
+        </style>
+    </head>
+    <body>
+        <h1>Interview Prep Summary</h1>
+        <h2>Job Description</h2>
+        <p>{job_desc}</p>
+        <h2>Company Information</h2>
+        <p>{company_info}</p>
+        <h2>Your Resume</h2>
+        <p>{resume}</p>
+        <h2>Parsed Information</h2>
+        <ul>
+            <li><strong>Company Values:</strong> {company_values}</li>
+            <li><strong>Tech Skills:</strong> {tech_skills}</li>
+            <li><strong>Soft Skills:</strong> {soft_skills}</li>
+            <li><strong>Job Duties:</strong> {job_duties}</li>
+        </ul>
+        <h2>Selected Question</h2>
+        <p>{selected_question}</p>
+        <h2>Your Answer (Transcribed)</h2>
+        <p>{answer_text}</p>
+        <h2>Feedback</h2>
+        <p>{feedback}</p>
+        <h2>Model Answer</h2>
+        <p>{model_answer}</p>
+    </body>
+    </html>
+    """
+    # Use a temporary file to store the HTML content for download
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".html") as tmp_file:
+        tmp_file.write(html_content.encode('utf-8'))
+        tmp_file_path = tmp_file.name
+    return tmp_file_path
+
 def create_demo():
     question_hints = get_question_hints()
     
@@ -475,6 +555,15 @@ def create_demo():
                 interactive=False
             )
 
+        # Add new section for saving to HTML
+        with gr.Column(elem_classes="container"):
+            gr.Markdown(
+                """### Step 6: Save Your Work""",
+                elem_classes="section-title"
+            )
+            save_btn = gr.Button("Save to HTML", variant="primary")
+            download_link = gr.File(label="Download HTML File")
+
         # Event handlers
         def update_questions(job_desc, company_info, resume):
             global persistent_job_desc, persistent_company_info, persistent_resume
@@ -549,6 +638,13 @@ FEEDBACK:
             analyze_info,
             inputs=[job_desc, company_info],
             outputs=[company_values, tech_skills, soft_skills, job_duties]
+        )
+
+        # Add new event binding for saving to HTML
+        save_btn.click(
+            save_to_html,
+            inputs=[job_desc, company_info, resume, company_values, tech_skills, soft_skills, job_duties, selected_question, answer_text, feedback, model_answer],
+            outputs=[download_link]
         )
 
     return demo

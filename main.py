@@ -112,7 +112,7 @@ class Evaluator:
         COMPANY VALUES: {company_values}
         """
         response = prompt_llm(prompt)
-        print("LLM Response:", response)
+        # print("LLM Response:", response)
 
         
         # Extract scores and feedback from the response
@@ -158,6 +158,7 @@ def analyze_info(job_desc, company_info):
     return parsed_info
 
 def generate_model_answer(question, company_info, job_desc, resume, voice_answer):
+    """Generate a model answer based on the question and all available context"""
     return interview_manager.drafter.generate_answer(question, company_info, job_desc, resume, voice_answer)
 
 def evaluate_answer(voice_answer, job_desc, company_values):
@@ -224,17 +225,6 @@ def analyze_answer(answer):
     
     feedback = "Sample feedback: Try to be more specific and provide concrete examples."
     return scores, feedback
-
-def generate_model_answer(question, user_answer):
-    """Generate a model answer based on the question and user's response"""
-    # This is a mock implementation - in a real app, you might use an LLM
-    model_answers = {
-        "Tell me about yourself": 
-            "Hi, I'm [Name], a [profession] with [X] years of experience in [industry]. I've developed expertise in [key skills] through my work at [previous companies]. In my current role at [company], I [key achievement]. I'm particularly passionate about [relevant interest], which aligns well with this position.",
-        "What's your greatest strength?":
-            "One of my greatest strengths is [specific strength]. For example, in my previous role at [company], I [specific example that demonstrates the strength]. This resulted in [quantifiable outcome]. I believe this strength would be particularly valuable in this position because [reason].",
-    }
-    return model_answers.get(question, "Model answer not available for this question.")
 
 def analyze_information(job_desc, company_info):
     """Analyze the job description and company information to extract values, tech skills, soft skills, and job duties"""
@@ -467,12 +457,10 @@ def create_demo():
                 """### Step 4: Review Analysis""",
                 elem_classes="section-title"
             )
-            with gr.Row():
-                score_output = gr.HTML(label="Scores")
-                feedback = gr.Textbox(
-                    label="Feedback",
-                    lines=2
-                )
+            feedback = gr.Textbox(
+                label="Analysis Results",
+                lines=6
+            )
 
         # Add new section for model answer
         with gr.Column(elem_classes="container"):
@@ -505,19 +493,19 @@ def create_demo():
         def process_answer(audio, answer, job_desc, company_values):
             if audio is not None:
                 answer = speech_to_text(audio)
-            scores, feedback = interview_manager.evaluator.evaluate_answer(answer, job_desc, company_values)
+            scores, feedback_text = interview_manager.evaluator.evaluate_answer(answer, job_desc, company_values)
             stars = lambda score: "⭐" * score + "☆" * (10 - score)
-            scores_html = f"""
-            <div>
-                <p><strong>Clarity:</strong> {stars(scores['clarity'])}</p>
-                <p><strong>Relevance:</strong> {stars(scores['relevance'])}</p>
-                <p><strong>Confidence:</strong> {stars(scores['confidence'])}</p>
-            </div>
-            """
-            return scores_html, feedback
+            combined_output = f"""SCORES:
+Clarity: {stars(scores['clarity'])}
+Relevance: {stars(scores['relevance'])}
+Confidence: {stars(scores['confidence'])}
 
-        def get_model_answer(question, user_answer):
-            return generate_model_answer(question, user_answer)
+FEEDBACK:
+{feedback_text}"""
+            return combined_output
+
+        def get_model_answer(question, company_info, job_desc, resume, answer_text):
+            return generate_model_answer(question, company_info, job_desc, resume, answer_text)
 
         def analyze_info(job_desc, company_info):
             parsed_info = interview_manager.analyzer.parse_job_info(job_desc, company_info)
@@ -546,13 +534,13 @@ def create_demo():
         analyze_btn.click(
             process_answer,
             inputs=[audio_input, answer_text, job_desc, company_values],
-            outputs=[score_output, feedback]
+            outputs=[feedback]
         )
 
         # Add new event binding for model answer
         generate_model_btn.click(
             get_model_answer,
-            inputs=[selected_question, answer_text],
+            inputs=[selected_question, company_info, job_desc, resume, answer_text],
             outputs=[model_answer]
         )
 

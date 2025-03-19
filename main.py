@@ -41,13 +41,16 @@ class Analyzer:
     def parse_job_info(self, job_description, company_values):
         """Extracts key insights and fills relevant fields."""
         prompt = f"""
-        SYSTEM: You are an expert job description analyzer. Extract relevant details from the provided job description and company values.
+        SYSTEM: You are an expert career coach and interviewer with over 30 years of experience in the tech industry. Your target is to save the user's time with your detail oriented analysis. Extract relevant details from the provided job description and company values.
         
         INSTRUCTIONS:
-        - Identify key company values.
-        - Extract essential technical skills required.
-        - Extract necessary soft skills.
-        - Summarize key job duties.
+        - Extract key company values such as integrity, innovation,customer obsession, ownership, etc.
+        - Extract essential technical skills required, like programming languages, frameworks, tools, etc.
+        - Extract necessary soft skills like communication, teamwork, problem-solving, etc.
+        - Extract key job duties/responsibilities, like tasks, projects, daily duties, etc.
+        - Output the bullet points for each section.
+        - Output the information in a structured format, only show the key words and phrases.
+        - Output less than 10 words for each line.
         
         JOB DESCRIPTION: {job_description}
         COMPANY VALUES: {company_values}
@@ -80,14 +83,20 @@ class Drafter:
     def generate_answer(self, question, company_info, job_description, resume, voice_answer):
         """Drafts a model answer based on user inputs."""
         prompt = f"""
-        SYSTEM: You are a professional interview coach. Draft a strong, structured answer based on the following inputs:
+        SYSTEM: You are a professional interview coach and writer with over 30 years of experience in the tech industry. Draft a strong, structured answer to get this user hired by a top tech company, based on the following inputs:
         
         INSTRUCTIONS:
         - Ensure clarity and logical flow.
         - Incorporate company values where relevant.
         - Highlight technical and soft skills from the job description.
+        - Use Amazon Leadership Principles to guide the answer.
+        - Use user's voice answer, experience and skills in the resume to answer the question.
+        - Use the situation, task, action, and result (STAR) method to structure the answer.
         - Improve conciseness while maintaining completeness.
         - Maintain a confident and positive tone.
+        - Keep the answer in 90 seconds to 2 minutes long.
+        - If possible, use the same language as the user's voice answer.
+        - If there is no information, just output "Not found".
         
         QUESTION: {question}
         COMPANY INFO: {company_info}
@@ -101,14 +110,20 @@ class Evaluator:
     def evaluate_answer(self, voice_answer, job_description, company_values):
         """Evaluates the user's voice answer based on clarity, relevance, and confidence."""
         prompt = f"""
-        SYSTEM: You are an expert evaluator for interview responses. Assess the answer based on the following criteria:
+        SYSTEM: You are an experienced interviewer in the tech industry for over 30 years. Also you are an expert evaluator for interview responses. Assess the answer based on the following criteria:
         
         INSTRUCTIONS:
         - Clarity: Is the response structured and easy to understand?
         - Relevance: Does it address the job's required skills and reflect company values?
         - Confidence: Does the tone convey certainty and professionalism?
+        - Consider that the user could be nervous, so don't be too strict.
+        - Consider that the user is not a native English speaker, so don't be too strict.
         - Provide constructive feedback and a score out of 10 for each category.
-        
+        - Always give some positive feedback at the begining, then give some feedback on what to improve.
+        - Use a friendly and professional tone and encourage the user to do better.
+        - Keep the feedback concise and to the point.
+        - Keep the feedback in 150 words to 250 words.
+
         USER VOICE ANSWER: {voice_answer}
         JOB DESCRIPTION: {job_description}
         COMPANY VALUES: {company_values}
@@ -182,7 +197,36 @@ def get_question_hints():
         "Why do you want to work at our company?": 
             "Demonstrate your knowledge of the company's values, culture, and mission.",
         "Tell me about your most relevant experience for this role": 
-            "Focus on experience that directly relates to the job requirements. Use the STAR method."
+            "Focus on experience that directly relates to the job requirements. Use the STAR method.",
+        "Describe a time you led/motivated others. How were you able to?":
+            "Describe a time when you led a team finishing a challenging task, tailor your approach to the people involved, and were positive and persuasive",
+        "What's your greatest weakness?":
+            "Choose a weakness that is not a deal breaker for the job, and show how you are working to improve it.",
+        "What's your biggest accomplishment?":
+            "Focus on a significant achievement that showcases your skills and dedication.",
+        "What's your biggest failure?":
+            "Share a failure that taught you a valuable lesson, emphasizing what you learned and how you overcame it.",
+        "How do you motivate team members?":
+            "Focus on your ability to inspire and guide others, using your own experiences as examples.",
+        "Tell me about a time you worked in a team. How did you contribute?":
+            "Describe your specific role and responsibilities within the team. Highlight a successful outcome that resulted from your teamwork.",
+        "Can you describe a time when you faced a conflict in a team setting? How did you handle the situation, and what was the outcome?":
+            "Highlight the positive outcome and lessons learned. Empathy, communication, negotiation, emotional intelligence",
+        "Can you describe a situation where you had to work with a difficult colleague or client?":
+            "Describe the specific challenges faced in the situation. Highlight the positive outcome from the experience.",
+        "Describe a time you experienced a major change at work. How did you adapt?":
+            "Pick an example where you were impacted by a big change and adapted efficiently; extra credit if you got others to do the same",
+        "Can you share an example of a time when you used creativity to solve a challenging problem? What approach did you take, and what was the result?":
+            "Analyze, creativity, optimization. Create your own opportunities.",
+        "Can you share an example of a time when you took initiative? What was the situation, and what impact did your actions have?":
+            "Creativity, proactive, positive changes, impact",
+        "How do you tackle challenges? Name a difficult challenge you faced while working on a project, how you overcame it, and what you learned.":
+            "Perseverance, resilience, resourcefulness, problem-solving",
+        "How do you handle ambiguity or uncertainty in your work?":
+            "Emphasize the strategies used to approach uncertain situations. Ownership. Adaptability"
+    
+
+            
     }
 
 def generate_sample_questions(job_desc, company_info, resume):
@@ -192,7 +236,23 @@ def generate_sample_questions(job_desc, company_info, resume):
         "Tell me about yourself",
         "What's your greatest strength?",
         "Why do you want this job?",
-        "Where do you see yourself in 5 years?"
+        "Where do you see yourself in 5 years?",
+        "Why do you want to work at our company?",
+        "Tell me about your most relevant experience for this role",
+        "Describe a time you led/motivated others. How were you able to?",
+        "What's your greatest weakness?",
+        "What's your biggest accomplishment?",
+        "What's your biggest failure?",
+        "How do you motivate team members?",
+        "Tell me about a time you worked in a team. How did you contribute?",
+        "Can you describe a time when you faced a conflict in a team setting? How did you handle the situation, and what was the outcome?",
+        "Can you describe a situation where you had to work with a difficult colleague or client?",
+        "Describe a time you experienced a major change at work. How did you adapt?",
+        "Can you share an example of a time when you used creativity to solve a challenging problem? What approach did you take, and what was the result?",
+        "Can you share an example of a time when you took initiative? What was the situation, and what impact did your actions have?",
+        "How do you tackle challenges? Name a difficult challenge you faced while working on a project, how you overcame it, and what you learned.",
+        "How do you handle ambiguity or uncertainty in your work?",
+
     ]
     
     # Add company-specific question if company info is provided
@@ -216,17 +276,17 @@ def speech_to_text(audio_path):
     except:
         return "Speech recognition failed. Please try again."
 
-def analyze_answer(answer):
-    """Simple mock analysis of the answer"""
-    # Simulate scoring
-    scores = {
-        "clarity": np.random.uniform(0.6, 1.0),
-        "confidence": np.random.uniform(0.6, 1.0),
-        "relevance": np.random.uniform(0.6, 1.0)
-    }
+# def analyze_answer(answer):
+#     """Simple mock analysis of the answer"""
+#     # Simulate scoring
+#     scores = {
+#         "clarity": np.random.uniform(0.6, 1.0),
+#         "confidence": np.random.uniform(0.6, 1.0),
+#         "relevance": np.random.uniform(0.6, 1.0)
+#     }
     
-    feedback = "Sample feedback: Try to be more specific and provide concrete examples."
-    return scores, feedback
+#     feedback = "Sample feedback: Try to be more specific and provide concrete examples."
+#     return scores, feedback
 
 def analyze_information(job_desc, company_info):
     """Analyze the job description and company information to extract values, tech skills, soft skills, and job duties"""

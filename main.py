@@ -267,20 +267,25 @@ def save_to_html(job_desc, company_info, resume, company_values, tech_skills, so
                 background-color: #f4f4f9;
                 color: #333;
             }}
-            h1, h2 {{
-                color: #4f46e5;
-            }}
             h1 {{
                 text-align: center;
                 margin-bottom: 40px;
+                color: #4f46e5;
+                font-size: 36px;
+                font-weight: bold;
             }}
             h2 {{
                 margin-top: 30px;
                 border-bottom: 2px solid #ddd;
                 padding-bottom: 10px;
+                color: #333;
+                font-size: 24px;
+                font-weight: bold;
             }}
-            p, ul {{
+            p {{
                 line-height: 1.6;
+                font-size: 16px;
+                margin-bottom: 20px;
             }}
             ul {{
                 list-style-type: none;
@@ -288,36 +293,66 @@ def save_to_html(job_desc, company_info, resume, company_values, tech_skills, so
             }}
             li {{
                 background: #fff;
-                margin: 5px 0;
-                padding: 10px;
-                border-radius: 5px;
+                margin: 10px 0;
+                padding: 15px;
+                border-radius: 8px;
                 box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                font-size: 16px;
+            }}
+            .section {{
+                margin-bottom: 40px;
+                padding: 20px;
+                background-color: #fff;
+                border-radius: 8px;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            }}
+            .section-title {{
+                color: #4f46e5;
+                font-size: 20px;
+                font-weight: bold;
+                margin-bottom: 10px;
             }}
         </style>
     </head>
     <body>
         <h1>Interview Prep Summary</h1>
-        <h2>Job Description</h2>
-        <p>{job_desc}</p>
-        <h2>Company Information</h2>
-        <p>{company_info}</p>
-        <h2>Your Resume</h2>
-        <p>{resume}</p>
-        <h2>Parsed Information</h2>
-        <ul>
-            <li><strong>Company Values:</strong> {company_values}</li>
-            <li><strong>Tech Skills:</strong> {tech_skills}</li>
-            <li><strong>Soft Skills:</strong> {soft_skills}</li>
-            <li><strong>Job Duties:</strong> {job_duties}</li>
-        </ul>
-        <h2>Selected Question</h2>
-        <p>{selected_question}</p>
-        <h2>Your Answer (Transcribed)</h2>
-        <p>{answer_text}</p>
-        <h2>Feedback</h2>
-        <p>{feedback}</p>
-        <h2>Model Answer</h2>
-        <p>{model_answer}</p>
+        <div class="section">
+            <h2 class="section-title">Job Description</h2>
+            <p>{job_desc}</p>
+        </div>
+        <div class="section">
+            <h2 class="section-title">Company Information</h2>
+            <p>{company_info}</p>
+        </div>
+        <div class="section">
+            <h2 class="section-title">Your Resume</h2>
+            <p>{resume}</p>
+        </div>
+        <div class="section">
+            <h2 class="section-title">Parsed Information</h2>
+            <ul>
+                <li><strong>Company Values:</strong> {company_values}</li>
+                <li><strong>Tech Skills:</strong> {tech_skills}</li>
+                <li><strong>Soft Skills:</strong> {soft_skills}</li>
+                <li><strong>Job Duties:</strong> {job_duties}</li>
+            </ul>
+        </div>
+        <div class="section">
+            <h2 class="section-title">Selected Question</h2>
+            <p>{selected_question}</p>
+        </div>
+        <div class="section">
+            <h2 class="section-title">Your Answer (Transcribed)</h2>
+            <p>{answer_text}</p>
+        </div>
+        <div class="section">
+            <h2 class="section-title">Feedback</h2>
+            <p>{feedback}</p>
+        </div>
+        <div class="section">
+            <h2 class="section-title">Model Answer</h2>
+            <p>{model_answer}</p>
+        </div>
     </body>
     </html>
     """

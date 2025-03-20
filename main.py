@@ -348,7 +348,7 @@ def save_to_html(job_desc, company_info, resume, company_values, tech_skills, so
     # Get current date and time
     current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     file_name = f"interview_summary_{current_time}.html"
-
+    
     html_content = f"""
     <html>
     <head>
@@ -406,46 +406,58 @@ def save_to_html(job_desc, company_info, resume, company_values, tech_skills, so
                 font-weight: bold;
                 margin-bottom: 10px;
             }}
+            .content {{
+                line-height: 1.6;
+                font-size: 16px;
+            }}
+            .info-item {{
+                background: #fff;
+                margin: 10px 0;
+                padding: 15px;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                font-size: 16px;
+            }}
         </style>
     </head>
     <body>
         <h1>Interview Prep Summary</h1>
         <div class="section">
             <h2 class="section-title">Job Description</h2>
-            <p>{job_desc}</p>
+            <div class="content">{job_desc}</div>
         </div>
         <div class="section">
             <h2 class="section-title">Company Information</h2>
-            <p>{company_info}</p>
+            <div class="content">{company_info}</div>
         </div>
         <div class="section">
             <h2 class="section-title">Your Resume</h2>
-            <p>{resume}</p>
+            <div class="content">{resume}</div>
         </div>
         <div class="section">
             <h2 class="section-title">Parsed Information</h2>
             <ul>
-                <li><strong>Company Values:</strong> {company_values}</li>
-                <li><strong>Tech Skills:</strong> {tech_skills}</li>
-                <li><strong>Soft Skills:</strong> {soft_skills}</li>
-                <li><strong>Job Duties:</strong> {job_duties}</li>
+                <li class="info-item"><strong>Company Values:</strong> {company_values}</li>
+                <li class="info-item"><strong>Tech Skills:</strong> {tech_skills}</li>
+                <li class="info-item"><strong>Soft Skills:</strong> {soft_skills}</li>
+                <li class="info-item"><strong>Job Duties:</strong> {job_duties}</li>
             </ul>
         </div>
         <div class="section">
             <h2 class="section-title">Selected Question</h2>
-            <p>{selected_question}</p>
+            <div class="content">{selected_question}</div>
         </div>
         <div class="section">
             <h2 class="section-title">Your Answer (Transcribed)</h2>
-            <p>{answer_text}</p>
+            <div class="content">{answer_text}</div>
         </div>
         <div class="section">
             <h2 class="section-title">Feedback</h2>
-            <p>{feedback}</p>
+            <div class="content">{feedback}</div>
         </div>
         <div class="section">
             <h2 class="section-title">Model Answer</h2>
-            <p>{model_answer}</p>
+            <div class="content">{model_answer}</div>
         </div>
     </body>
     </html>

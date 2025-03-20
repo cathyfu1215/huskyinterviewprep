@@ -41,24 +41,58 @@ class Analyzer:
     def parse_job_info(self, job_description, company_values):
         """Extracts key insights and fills relevant fields."""
         prompt = f"""
-        SYSTEM: You are an expert career coach and interviewer with over 30 years of experience in the tech industry. Your target is to save the user's time with your detail oriented analysis. Extract relevant details from the provided job description and company values.
-        
+        SYSTEM: You are an expert career coach and interviewer with over 30 years of experience in the tech industry. Your task is to thoroughly analyze the job description and company values to extract and classify all relevant information.
+
         INSTRUCTIONS:
-        - Extract key company values such as integrity, innovation,customer obsession, ownership, etc.
-        - Extract essential technical skills required, like programming languages, frameworks, tools, etc.
-        - Extract necessary soft skills like communication, teamwork, problem-solving, etc.
-        - Extract key job duties/responsibilities, like tasks, projects, daily duties, etc.
-        - Output the bullet points for each section.
-        - Output the information in a structured format, only show the key words and phrases.
-        - Output less than 10 words for each line.
+        1. Analyze the entire text for any skills, requirements, or values, looking for both explicit and implicit mentions.
+        2. Classify all found information into these categories:
+
+        Company Values:
+        - Look for mentions of culture, principles, mission, values
+        - Include both explicit values and implied ones from the company's description
+        - Examples: integrity, innovation, customer focus, diversity, sustainability
+
+        Technical Skills:
+        - All technical requirements, tools, languages, platforms
+        - Both required and preferred technical qualifications
+        - Include domain-specific technical knowledge
+        - Examples: programming languages, frameworks, methodologies, systems
+
+        Soft Skills:
+        - All interpersonal and professional skills
+        - Leadership and management capabilities
+        - Personal qualities and attributes
+        - Examples: communication, leadership, problem-solving, teamwork
+
+        Job Duties:
+        - Primary responsibilities and expectations
+        - Day-to-day tasks and long-term objectives
+        - Project responsibilities and deliverables
+        - Team and organizational contributions
+
+        FORMAT YOUR RESPONSE EXACTLY AS FOLLOWS:
+        **Key Company Values:**
+        - [value 1]
+        - [value 2]
         
+        **Essential Technical Skills:**
+        - [skill 1]
+        - [skill 2]
+        
+        **Necessary Soft Skills:**
+        - [skill 1]
+        - [skill 2]
+        
+        **Summary of Key Job Duties:**
+        - [duty 1]
+        - [duty 2]
+
+        Keep each bullet point concise (under 10 words).
+
         JOB DESCRIPTION: {job_description}
         COMPANY VALUES: {company_values}
         """
         response = prompt_llm(prompt)
-
-        # Print the response for debugging
-        # print("LLM Response:", response)
         
         # Use regular expressions to extract the relevant sections
         company_values_match = re.search(r"\*\*Key Company Values:\*\*(.*?)\*\*Essential Technical Skills:\*\*", response, re.DOTALL)

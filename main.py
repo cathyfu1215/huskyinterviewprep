@@ -730,8 +730,8 @@ def create_demo():
                 # Left column for interviewer avatar
                 with gr.Column(scale=1):
                     interviewer_avatar = gr.Image(
-                        value="images/maria_rodriguez.png",
-                        label="Interviewer: Maria Rodriguez",
+                        value="interviewer.png",
+                        label="Interviewer",
                         show_label=True,
                         height=200,
                         container=True

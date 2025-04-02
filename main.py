@@ -11,6 +11,10 @@ from dotenv import load_dotenv
 import os
 import tempfile
 from datetime import datetime
+import pyttsx3
+import threading
+from gtts import gTTS
+import playsound
 
 load_dotenv()
 
@@ -479,6 +483,20 @@ def save_to_html(job_desc, company_info, resume, company_values, tech_skills, so
         tmp_file_path = tmp_file.name
     return tmp_file_path
 
+def get_voice_options():
+    return {
+        "US English": {"lang": "en", "tld": "com"},
+        "UK English": {"lang": "en", "tld": "co.uk"},
+        "Australian English": {"lang": "en", "tld": "com.au"},
+        "Indian English": {"lang": "en", "tld": "co.in"},
+        "French": {"lang": "fr", "tld": "fr"},
+        "German": {"lang": "de", "tld": "de"},
+        "Spanish": {"lang": "es", "tld": "es"},
+        "Italian": {"lang": "it", "tld": "it"},
+        "Japanese": {"lang": "ja", "tld": "co.jp"},
+        "Korean": {"lang": "ko", "tld": "co.kr"}
+    }
+
 def create_demo():
     question_hints = get_question_hints()
     
@@ -708,15 +726,36 @@ def create_demo():
                 """### Step 3: Record Your Answer""",
                 elem_classes="section-title"
             )
-            selected_question = gr.Textbox(
-                label="Current Question",
-                interactive=False
-            )
-            question_hint = gr.Textbox(
-                label="How to Answer",
-                interactive=False,
-                lines=2
-            )
+            with gr.Row():
+                # Left column for interviewer avatar
+                with gr.Column(scale=1):
+                    interviewer_avatar = gr.Image(
+                        value="images/maria_rodriguez.png",
+                        label="Interviewer: Maria Rodriguez",
+                        show_label=True,
+                        height=200,
+                        container=True
+                    )
+                    voice_selection = gr.Dropdown(
+                        choices=list(get_voice_options().keys()),
+                        value="US English (Female)",
+                        label="Voice Accent",
+                        info="Select the voice for reading questions"
+                    )
+                    read_question_btn = gr.Button("Read Question Aloud", variant="secondary")
+                
+                # Right column for question and recording
+                with gr.Column(scale=2):
+                    selected_question = gr.Textbox(
+                        label="Current Question",
+                        interactive=False
+                    )
+                    question_hint = gr.Textbox(
+                        label="How to Answer",
+                        interactive=False,
+                        lines=2
+                    )
+            
             with gr.Row():
                 audio_input = gr.Audio(
                     sources=["microphone"],
@@ -813,6 +852,33 @@ FEEDBACK:
             parsed_info = interview_manager.analyzer.parse_job_info(job_desc, company_info)
             return parsed_info['company_values'], parsed_info['tech_skills'], parsed_info['soft_skills'], parsed_info['job_duties']
 
+        def read_text_aloud(text, voice_option):
+            """Read the given text aloud using Google Text-to-Speech with selected voice"""
+            voice_options = get_voice_options()
+            selected_voice = voice_options.get(voice_option, {"lang": "en", "tld": "com"})
+            
+            def _read():
+                try:
+                    # Create a temporary file for the audio
+                    with tempfile.NamedTemporaryFile(delete=False, suffix='.mp3') as fp:
+                        temp_filename = fp.name
+                    
+                    # Generate the speech audio file with the selected voice
+                    tts = gTTS(text=text, lang=selected_voice["lang"], tld=selected_voice["tld"])
+                    tts.save(temp_filename)
+                    
+                    # Play the audio file
+                    playsound.playsound(temp_filename)
+                    
+                    # Clean up the temporary file
+                    os.unlink(temp_filename)
+                except Exception as e:
+                    print(f"TTS Error: {e}")
+            
+            # Run in a separate thread to prevent UI blocking
+            threading.Thread(target=_read).start()
+            return None
+
         # Event bindings
       
         generate_btn.click(
@@ -862,6 +928,13 @@ FEEDBACK:
             save_to_html,
             inputs=[job_desc, company_info, resume, company_values, tech_skills, soft_skills, job_duties, selected_question, answer_text, feedback, model_answer],
             outputs=[download_link]
+        )
+
+        # Add new event binding for reading text aloud
+        read_question_btn.click(
+            read_text_aloud,
+            inputs=[selected_question, voice_selection],
+            outputs=None
         )
 
     return demo

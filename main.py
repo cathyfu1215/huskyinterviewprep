@@ -264,40 +264,51 @@ def get_question_hints():
     }
 
 def generate_sample_questions(job_desc, company_info, resume):
-    """Simulate generating interview questions based on all inputs"""
-    # Basic questions
-    questions = [
-        "Tell me about yourself",
-        "What's your greatest strength?",
-        "Why do you want this job?",
-        "Where do you see yourself in 5 years?",
-        "Why do you want to work at our company?",
-        "Tell me about your most relevant experience for this role",
-        "Describe a time you led/motivated others. How were you able to?",
-        "What's your greatest weakness?",
-        "What's your biggest accomplishment?",
-        "What's your biggest failure?",
-        "How do you motivate team members?",
-        "Tell me about a time you worked in a team. How did you contribute?",
-        "Can you describe a time when you faced a conflict in a team setting? How did you handle the situation, and what was the outcome?",
-        "Can you describe a situation where you had to work with a difficult colleague or client?",
-        "Describe a time you experienced a major change at work. How did you adapt?",
-        "Can you share an example of a time when you used creativity to solve a challenging problem? What approach did you take, and what was the result?",
-        "Can you share an example of a time when you took initiative? What was the situation, and what impact did your actions have?",
-        "How do you tackle challenges? Name a difficult challenge you faced while working on a project, how you overcame it, and what you learned.",
-        "How do you handle ambiguity or uncertainty in your work?",
-
-    ]
+    """Generate categorized interview questions based on all inputs"""
+    # Organize questions by category
+    categorized_questions = {
+        "Introduction": [
+            "Tell me about yourself",
+            "Tell me about your most relevant experience for this role"
+        ],
+        "Strengths & Weaknesses": [
+            "What's your greatest strength?",
+            "What's your greatest weakness?",
+            "What's your biggest accomplishment?", 
+            "What's your biggest failure?"
+        ],
+        "Career Goals": [
+            "Why do you want this job?",
+            "Where do you see yourself in 5 years?",
+            "Why do you want to work at our company?"
+        ],
+        "Teamwork & Collaboration": [
+            "Tell me about a time you worked in a team. How did you contribute?",
+            "Can you describe a time when you faced a conflict in a team setting? How did you handle the situation, and what was the outcome?",
+            "Can you describe a situation where you had to work with a difficult colleague or client?"
+        ],
+        "Leadership & Initiative": [
+            "Describe a time you led/motivated others. How were you able to?",
+            "How do you motivate team members?",
+            "Can you share an example of a time when you took initiative? What was the situation, and what impact did your actions have?"
+        ],
+        "Problem Solving & Adaptability": [
+            "How do you tackle challenges? Name a difficult challenge you faced while working on a project, how you overcame it, and what you learned.",
+            "Describe a time you experienced a major change at work. How did you adapt?",
+            "Can you share an example of a time when you used creativity to solve a challenging problem? What approach did you take, and what was the result?",
+            "How do you handle ambiguity or uncertainty in your work?"
+        ]
+    }
     
     # Add company-specific question if company info is provided
-    if company_info.strip():
-        questions.append(f"Why do you want to work at our company?")
+    if company_info.strip() and "Why do you want to work at our company?" not in categorized_questions["Career Goals"]:
+        categorized_questions["Career Goals"].append("Why do you want to work at our company?")
     
     # Add experience-related question if resume is provided
-    if resume.strip():
-        questions.append("Tell me about your most relevant experience for this role")
+    if resume.strip() and "Tell me about your most relevant experience for this role" not in categorized_questions["Introduction"]:
+        categorized_questions["Introduction"].append("Tell me about your most relevant experience for this role")
     
-    return questions
+    return categorized_questions
 
 def speech_to_text(audio_path):
     """Convert speech to text"""
@@ -641,11 +652,56 @@ def create_demo():
                 """### Step 2: Practice Questions""",
                 elem_classes="section-title"
             )
-            questions = gr.Radio(
-                choices=[],
-                label="Interview Questions",
-                info="Select a question to practice"
-            )
+            
+            # Create tabs for question categories
+            with gr.Tabs() as question_categories:
+                intro_tab = gr.TabItem("Introduction")
+                with intro_tab:
+                    intro_questions = gr.Radio(
+                        choices=[],
+                        label="Introduction Questions",
+                        info="Select a question to practice"
+                    )
+                
+                strengths_tab = gr.TabItem("Strengths & Weaknesses")
+                with strengths_tab:
+                    strengths_questions = gr.Radio(
+                        choices=[],
+                        label="Strengths & Weaknesses Questions",
+                        info="Select a question to practice"
+                    )
+                
+                career_tab = gr.TabItem("Career Goals")
+                with career_tab:
+                    career_questions = gr.Radio(
+                        choices=[],
+                        label="Career Goals Questions",
+                        info="Select a question to practice"
+                    )
+                
+                teamwork_tab = gr.TabItem("Teamwork & Collaboration")
+                with teamwork_tab:
+                    teamwork_questions = gr.Radio(
+                        choices=[],
+                        label="Teamwork & Collaboration Questions",
+                        info="Select a question to practice"
+                    )
+                
+                leadership_tab = gr.TabItem("Leadership & Initiative")
+                with leadership_tab:
+                    leadership_questions = gr.Radio(
+                        choices=[],
+                        label="Leadership & Initiative Questions",
+                        info="Select a question to practice"
+                    )
+                
+                problem_tab = gr.TabItem("Problem Solving & Adaptability")
+                with problem_tab:
+                    problem_questions = gr.Radio(
+                        choices=[],
+                        label="Problem Solving & Adaptability Questions",
+                        info="Select a question to practice"
+                    )
 
         with gr.Column(elem_classes="container"):
             gr.Markdown(
@@ -711,8 +767,24 @@ def create_demo():
             persistent_job_desc = job_desc
             persistent_company_info = company_info
             persistent_resume = resume
-            questions = generate_sample_questions(job_desc, company_info, resume)
-            return gr.Radio(choices=questions)
+            
+            categorized_questions = generate_sample_questions(job_desc, company_info, resume)
+            
+            intro_qs = categorized_questions.get("Introduction", [])
+            strengths_qs = categorized_questions.get("Strengths & Weaknesses", [])
+            career_qs = categorized_questions.get("Career Goals", [])
+            teamwork_qs = categorized_questions.get("Teamwork & Collaboration", [])
+            leadership_qs = categorized_questions.get("Leadership & Initiative", [])
+            problem_qs = categorized_questions.get("Problem Solving & Adaptability", [])
+            
+            return [
+                gr.update(choices=intro_qs), 
+                gr.update(choices=strengths_qs),
+                gr.update(choices=career_qs),
+                gr.update(choices=teamwork_qs),
+                gr.update(choices=leadership_qs),
+                gr.update(choices=problem_qs)
+            ]
 
         def update_selected_question(question):
             if question:
@@ -746,14 +818,18 @@ FEEDBACK:
         generate_btn.click(
             update_questions,
             inputs=[job_desc, company_info, resume],
-            outputs=[questions]
+            outputs=[intro_questions, strengths_questions, career_questions, 
+                    teamwork_questions, leadership_questions, problem_questions]
         )
 
-        questions.change(
-            update_selected_question,
-            inputs=[questions],
-            outputs=[selected_question, question_hint]
-        )
+        # Connect the question radios to the selected_question and question_hint
+        for question_radio in [intro_questions, strengths_questions, career_questions, 
+                              teamwork_questions, leadership_questions, problem_questions]:
+            question_radio.change(
+                update_selected_question,
+                inputs=[question_radio],
+                outputs=[selected_question, question_hint]
+            )
 
         audio_input.change(
             speech_to_text,

@@ -643,26 +643,30 @@ def create_demo():
                 lines=3
             )
             analyze_info_btn = gr.Button("Analyze Information", variant="primary")
-            company_values = gr.Textbox(
-                label="Company Values",
-                placeholder="Waiting for parsing the information...",
-                lines=2
-            )
-            tech_skills = gr.Textbox(
-                label="Tech Skills",
-                placeholder="Waiting for parsing the information...",
-                lines=2
-            )
-            soft_skills = gr.Textbox(
-                label="Soft Skills",
-                placeholder="Waiting for parsing the information...",
-                lines=2
-            )
-            job_duties = gr.Textbox(
-                label="Job Duties",
-                placeholder="Waiting for parsing the information...",
-                lines=2
-            )
+            
+            with gr.Row():
+                company_values = gr.Textbox(
+                    label="Company Values",
+                    placeholder="Waiting for parsing the information...",
+                    lines=2
+                )
+                job_duties = gr.Textbox(
+                    label="Job Duties",
+                    placeholder="Waiting for parsing the information...",
+                    lines=2
+                )
+                
+            with gr.Row():
+                soft_skills = gr.Textbox(
+                    label="Soft Skills",
+                    placeholder="Waiting for parsing the information...",
+                    lines=2
+                )
+                tech_skills = gr.Textbox(
+                    label="Tech Skills",
+                    placeholder="Waiting for parsing the information...",
+                    lines=2
+                )
             generate_btn = gr.Button("Generate Interview Questions", variant="primary")
 
         with gr.Column(elem_classes="container"):
@@ -738,7 +742,7 @@ def create_demo():
                     )
                     voice_selection = gr.Dropdown(
                         choices=list(get_voice_options().keys()),
-                        value="US English (Female)",
+                        value="US English",
                         label="Voice Accent",
                         info="Select the voice for reading questions"
                     )

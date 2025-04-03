@@ -276,7 +276,7 @@
                     <div class="md:col-span-1">
                         <div class="text-center">
                             <div class="rounded-lg overflow-hidden mb-4 mx-auto w-48 h-48 flex items-center justify-center bg-gray-100">
-                                <img src="https://i.imgur.com/4KeKvtH.png" alt="Interviewer" class="max-w-full max-h-full">
+                                <img src="/static/interviewer.png" alt="Interviewer" class="max-w-full max-h-full">
                             </div>
                             
                             <div class="mb-4">
@@ -301,7 +301,6 @@
                             
                             <div x-show="audioPlaying" class="mt-4">
                                 <audio x-ref="audioPlayer" controls class="w-full">
-                                    <source :src="audioSrc" type="audio/mp3">
                                     Your browser does not support the audio element.
                                 </audio>
                             </div>
@@ -558,11 +557,13 @@
                             this.audioSrc = data.audio;
                             this.audioPlaying = true;
                             
-                            // Play the audio after setting the source
+                            // Give DOM time to update before accessing the audio element
                             setTimeout(() => {
                                 const audio = this.$refs.audioPlayer;
                                 if (audio) {
-                                    audio.play();
+                                    audio.src = data.audio;
+                                    audio.load();
+                                    audio.play().catch(e => console.error('Error playing audio:', e));
                                 }
                             }, 100);
                         }
@@ -582,8 +583,20 @@
                 
                 async startRecording() {
                     try {
-                        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                        this.recorder = new MediaRecorder(stream);
+                        // Set audio constraints for better compatibility
+                        const stream = await navigator.mediaDevices.getUserMedia({
+                            audio: {
+                                channelCount: 1,
+                                sampleRate: 16000,
+                                sampleSize: 16,
+                                echoCancellation: true,
+                                noiseSuppression: true
+                            }
+                        });
+                        
+                        this.recorder = new MediaRecorder(stream, {
+                            mimeType: 'audio/webm' // More widely supported in browsers
+                        });
                         this.audioChunks = [];
                         
                         this.recorder.ondataavailable = (e) => {
@@ -593,7 +606,7 @@
                         };
                         
                         this.recorder.onstop = async () => {
-                            const audioBlob = new Blob(this.audioChunks, { type: 'audio/wav' });
+                            const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
                             const reader = new FileReader();
                             reader.readAsDataURL(audioBlob);
                             

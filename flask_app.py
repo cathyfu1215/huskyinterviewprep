@@ -303,21 +303,53 @@ def speech_to_text(audio_data):
     """Convert speech to text using SpeechRecognition"""
     recognizer = sr.Recognizer()
     
-    # Save base64 audio data to a temporary file
-    audio_bytes = base64.b64decode(audio_data.split(',')[1])
-    with tempfile.NamedTemporaryFile(delete=False, suffix='.wav') as temp_audio_file:
-        temp_audio_file.write(audio_bytes)
-        temp_audio_file_path = temp_audio_file.name
-    
     try:
-        with sr.AudioFile(temp_audio_file_path) as source:
-            audio = recognizer.record(source)
-        text = recognizer.recognize_google(audio)
-        os.unlink(temp_audio_file_path)  # Delete temp file
-        return text
+        # Save base64 audio data to a temporary file
+        audio_bytes = base64.b64decode(audio_data.split(',')[1])
+        
+        # Save as webm file first
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.webm') as temp_audio_file:
+            temp_audio_file.write(audio_bytes)
+            temp_webm_path = temp_audio_file.name
+        
+        # Convert to WAV using FFmpeg if available, otherwise use a direct approach
+        try:
+            import subprocess
+            wav_path = temp_webm_path.replace('.webm', '.wav')
+            subprocess.call(['ffmpeg', '-i', temp_webm_path, '-ar', '16000', '-ac', '1', wav_path])
+            os.unlink(temp_webm_path)  # Delete the webm file
+            
+            with sr.AudioFile(wav_path) as source:
+                audio = recognizer.record(source)
+            text = recognizer.recognize_google(audio)
+            os.unlink(wav_path)  # Delete temp WAV file
+            return text
+        except (ImportError, FileNotFoundError):
+            # If FFmpeg is not available, try direct approach with the webm file
+            # Note: This might not work perfectly but worth trying
+            with sr.AudioFile(temp_webm_path) as source:
+                audio = recognizer.record(source)
+            text = recognizer.recognize_google(audio)
+            os.unlink(temp_webm_path)  # Delete temp file
+            return text
     except Exception as e:
-        os.unlink(temp_audio_file_path)  # Delete temp file
-        return f"Speech recognition failed: {str(e)}"
+        # If an error occurs, try to delete any temporary files
+        try:
+            if 'temp_webm_path' in locals():
+                os.unlink(temp_webm_path)
+            if 'wav_path' in locals():
+                os.unlink(wav_path)
+        except:
+            pass
+        
+        # Use a different approach as fallback - send directly to Google's API
+        try:
+            audio_bytes = base64.b64decode(audio_data.split(',')[1])
+            audio_data_obj = sr.AudioData(audio_bytes, 16000, 2)  # Using default values
+            text = recognizer.recognize_google(audio_data_obj)
+            return text
+        except Exception as inner_e:
+            return f"Speech recognition failed: {str(e)}. Second attempt: {str(inner_e)}"
 
 def get_voice_options():
     return {
@@ -625,6 +657,15 @@ if __name__ == "__main__":
     if not os.path.exists('templates'):
         os.makedirs('templates')
     
+    # Create static folder if it doesn't exist
+    if not os.path.exists('static'):
+        os.makedirs('static')
+    
+    # Copy interviewer.png to static folder if it exists
+    if os.path.exists('interviewer.png') and not os.path.exists('static/interviewer.png'):
+        import shutil
+        shutil.copy('interviewer.png', 'static/interviewer.png')
+    
     # Create HTML template file
     with open('templates/index.html', 'w') as f:
         f.write('''
@@ -905,7 +946,7 @@ if __name__ == "__main__":
                     <div class="md:col-span-1">
                         <div class="text-center">
                             <div class="rounded-lg overflow-hidden mb-4 mx-auto w-48 h-48 flex items-center justify-center bg-gray-100">
-                                <img src="https://i.imgur.com/4KeKvtH.png" alt="Interviewer" class="max-w-full max-h-full">
+                                <img src="/static/interviewer.png" alt="Interviewer" class="max-w-full max-h-full">
                             </div>
                             
                             <div class="mb-4">
@@ -930,7 +971,6 @@ if __name__ == "__main__":
                             
                             <div x-show="audioPlaying" class="mt-4">
                                 <audio x-ref="audioPlayer" controls class="w-full">
-                                    <source :src="audioSrc" type="audio/mp3">
                                     Your browser does not support the audio element.
                                 </audio>
                             </div>
@@ -1187,11 +1227,13 @@ if __name__ == "__main__":
                             this.audioSrc = data.audio;
                             this.audioPlaying = true;
                             
-                            // Play the audio after setting the source
+                            // Give DOM time to update before accessing the audio element
                             setTimeout(() => {
                                 const audio = this.$refs.audioPlayer;
                                 if (audio) {
-                                    audio.play();
+                                    audio.src = data.audio;
+                                    audio.load();
+                                    audio.play().catch(e => console.error('Error playing audio:', e));
                                 }
                             }, 100);
                         }
@@ -1211,8 +1253,20 @@ if __name__ == "__main__":
                 
                 async startRecording() {
                     try {
-                        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                        this.recorder = new MediaRecorder(stream);
+                        // Set audio constraints for better compatibility
+                        const stream = await navigator.mediaDevices.getUserMedia({
+                            audio: {
+                                channelCount: 1,
+                                sampleRate: 16000,
+                                sampleSize: 16,
+                                echoCancellation: true,
+                                noiseSuppression: true
+                            }
+                        });
+                        
+                        this.recorder = new MediaRecorder(stream, {
+                            mimeType: 'audio/webm' // More widely supported in browsers
+                        });
                         this.audioChunks = [];
                         
                         this.recorder.ondataavailable = (e) => {
@@ -1222,7 +1276,7 @@ if __name__ == "__main__":
                         };
                         
                         this.recorder.onstop = async () => {
-                            const audioBlob = new Blob(this.audioChunks, { type: 'audio/wav' });
+                            const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
                             const reader = new FileReader();
                             reader.readAsDataURL(audioBlob);
                             

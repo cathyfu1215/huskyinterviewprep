@@ -174,8 +174,10 @@
                 </div>
                 
                 <div class="mt-6 flex justify-center">
-                    <button @click="analyzeInfo()" class="btn-primary px-6 py-3 rounded-lg font-medium flex items-center">
-                        <i class="fas fa-search mr-2"></i> Analyze Information
+                    <button @click="analyzeInfo()" :disabled="isAnalyzing" class="btn-primary px-6 py-3 rounded-lg font-medium flex items-center">
+                        <span class="spinner" x-show="isAnalyzing"></span>
+                        <i class="fas fa-search mr-2" x-show="!isAnalyzing"></i>
+                        <span x-text="isAnalyzing ? 'Analyzing...' : 'Analyze Information'"></span>
                     </button>
                 </div>
                 
@@ -217,8 +219,10 @@
                         </div>
                         
                         <div class="flex justify-center">
-                            <button @click="generateQuestions()" class="btn-primary px-6 py-3 rounded-lg font-medium flex items-center">
-                                <i class="fas fa-list-ul mr-2"></i> Generate Interview Questions
+                            <button @click="generateQuestions()" :disabled="isGeneratingQuestions" class="btn-primary px-6 py-3 rounded-lg font-medium flex items-center">
+                                <span class="spinner" x-show="isGeneratingQuestions"></span>
+                                <i class="fas fa-list-ul mr-2" x-show="!isGeneratingQuestions"></i>
+                                <span x-text="isGeneratingQuestions ? 'Generating...' : 'Generate Interview Questions'"></span>
                             </button>
                         </div>
                     </div>
@@ -295,8 +299,10 @@
                                 </select>
                             </div>
                             
-                            <button @click="readQuestionAloud()" class="btn-secondary w-full px-4 py-2 rounded-lg font-medium flex items-center justify-center">
-                                <i class="fas fa-volume-up mr-2"></i> Read Question Aloud
+                            <button @click="readQuestionAloud()" :disabled="isReadingAloud" class="btn-secondary w-full px-4 py-2 rounded-lg font-medium flex items-center justify-center">
+                                <span class="spinner" x-show="isReadingAloud"></span>
+                                <i class="fas fa-volume-up mr-2" x-show="!isReadingAloud"></i>
+                                <span x-text="isReadingAloud ? 'Reading...' : 'Read Question Aloud'"></span>
                             </button>
                             
                             <div x-show="audioPlaying" class="mt-4">
@@ -343,8 +349,10 @@
                         </div>
                         
                         <div class="mt-4">
-                            <button @click="analyzeAnswer()" class="btn-primary px-6 py-3 rounded-lg font-medium flex items-center">
-                                <i class="fas fa-chart-line mr-2"></i> Analyze Answer
+                            <button @click="analyzeAnswer()" :disabled="isAnalyzingAnswer" class="btn-primary px-6 py-3 rounded-lg font-medium flex items-center">
+                                <span class="spinner" x-show="isAnalyzingAnswer"></span>
+                                <i class="fas fa-chart-line mr-2" x-show="!isAnalyzingAnswer"></i>
+                                <span x-text="isAnalyzingAnswer ? 'Analyzing...' : 'Analyze Answer'"></span>
                             </button>
                         </div>
                     </div>
@@ -378,7 +386,11 @@
                 
                 <div class="bg-gray-50 p-6 rounded-lg">
                     <h3 class="font-semibold text-gray-800 mb-3">Detailed Feedback</h3>
-                    <div class="prose text-gray-700" x-html="feedbackText"></div>
+                    <div class="prose max-w-none text-gray-700 whitespace-pre-line leading-relaxed" 
+                         x-html="feedbackText.replace(/
+
+/g, '<br><br>').replace(/
+/g, '<br>')"></div>
                 </div>
             </section>
             
@@ -389,14 +401,20 @@
                     Get Model Answer
                 </h2>
                 
-                <button @click="generateModelAnswer()" class="btn-primary px-6 py-3 rounded-lg font-medium flex items-center mb-6">
-                    <i class="fas fa-magic mr-2"></i> Generate Model Answer
+                <button @click="generateModelAnswer()" :disabled="isGeneratingModel" class="btn-primary px-6 py-3 rounded-lg font-medium flex items-center mb-6">
+                    <span class="spinner" x-show="isGeneratingModel"></span>
+                    <i class="fas fa-magic mr-2" x-show="!isGeneratingModel"></i>
+                    <span x-text="isGeneratingModel ? 'Generating...' : 'Generate Model Answer'"></span>
                 </button>
                 
                 <template x-if="modelAnswer">
                     <div class="bg-gray-50 p-6 rounded-lg">
                         <h3 class="font-semibold text-gray-800 mb-3">Sample Professional Answer</h3>
-                        <div class="prose text-gray-700" x-html="modelAnswer"></div>
+                        <div class="prose max-w-none text-gray-700 whitespace-pre-line leading-relaxed" 
+                             x-html="modelAnswer.replace(/
+
+/g, '<br><br>').replace(/
+/g, '<br>')"></div>
                     </div>
                 </template>
             </section>
@@ -408,8 +426,10 @@
                     Save Your Work
                 </h2>
                 
-                <button @click="saveToHTML()" class="btn-primary px-6 py-3 rounded-lg font-medium flex items-center">
-                    <i class="fas fa-download mr-2"></i> Save as HTML
+                <button @click="saveToHTML()" :disabled="isSaving" class="btn-primary px-6 py-3 rounded-lg font-medium flex items-center">
+                    <span class="spinner" x-show="isSaving"></span>
+                    <i class="fas fa-download mr-2" x-show="!isSaving"></i>
+                    <span x-text="isSaving ? 'Saving...' : 'Save as HTML'"></span>
                 </button>
                 
                 <template x-if="downloadLink">
@@ -447,6 +467,15 @@
                 selectedQuestion: '',
                 questionsGenerated: false,
                 
+                // Loading states
+                isAnalyzing: false,
+                isGeneratingQuestions: false,
+                isReadingAloud: false,
+                isTranscribing: false,
+                isAnalyzingAnswer: false,
+                isGeneratingModel: false,
+                isSaving: false,
+                
                 // Recording
                 isRecording: false,
                 recorder: null,
@@ -473,6 +502,8 @@
                         return;
                     }
                     
+                    this.isAnalyzing = true;  // Start loading indicator
+                    
                     try {
                         const response = await fetch('/analyze-info', {
                             method: 'POST',
@@ -489,6 +520,8 @@
                     } catch (error) {
                         console.error('Error analyzing information:', error);
                         alert('Error analyzing information. Please try again.');
+                    } finally {
+                        this.isAnalyzing = false;  // Stop loading indicator
                     }
                 },
                 
@@ -497,6 +530,8 @@
                         alert('Please enter at least the job description.');
                         return;
                     }
+                    
+                    this.isGeneratingQuestions = true;  // Start loading indicator
                     
                     try {
                         const response = await fetch('/generate-questions', {
@@ -523,6 +558,8 @@
                     } catch (error) {
                         console.error('Error generating questions:', error);
                         alert('Error generating questions. Please try again.');
+                    } finally {
+                        this.isGeneratingQuestions = false;  // Stop loading indicator
                     }
                 },
                 
@@ -539,6 +576,8 @@
                 
                 async readQuestionAloud() {
                     if (!this.selectedQuestion) return;
+                    
+                    this.isReadingAloud = true;  // Start loading indicator
                     
                     try {
                         const response = await fetch('/text-to-speech', {
@@ -570,6 +609,8 @@
                     } catch (error) {
                         console.error('Error reading question aloud:', error);
                         alert('Error reading question aloud. Please try again.');
+                    } finally {
+                        this.isReadingAloud = false;  // Stop loading indicator
                     }
                 },
                 
@@ -628,6 +669,8 @@
                                 } catch (error) {
                                     console.error('Error transcribing audio:', error);
                                     this.recordingStatus = 'Error transcribing audio';
+                                } finally {
+                                    this.isTranscribing = false;  // Stop transcribing indicator
                                 }
                             };
                         };
@@ -645,6 +688,7 @@
                     if (this.recorder && this.recorder.state !== 'inactive') {
                         this.recorder.stop();
                         this.isRecording = false;
+                        this.isTranscribing = true;  // Start transcribing indicator
                         this.recordingStatus = 'Processing...';
                         
                         // Stop all audio tracks
@@ -657,6 +701,8 @@
                         alert('Please record or enter an answer to analyze.');
                         return;
                     }
+                    
+                    this.isAnalyzingAnswer = true;  // Start loading indicator
                     
                     try {
                         const response = await fetch('/analyze-answer', {
@@ -677,6 +723,8 @@
                     } catch (error) {
                         console.error('Error analyzing answer:', error);
                         alert('Error analyzing answer. Please try again.');
+                    } finally {
+                        this.isAnalyzingAnswer = false;  // Stop loading indicator
                     }
                 },
                 
@@ -685,6 +733,8 @@
                         alert('Please select a question first.');
                         return;
                     }
+                    
+                    this.isGeneratingModel = true;  // Start loading indicator
                     
                     try {
                         const response = await fetch('/generate-model-answer', {
@@ -706,10 +756,14 @@
                     } catch (error) {
                         console.error('Error generating model answer:', error);
                         alert('Error generating model answer. Please try again.');
+                    } finally {
+                        this.isGeneratingModel = false;  // Stop loading indicator
                     }
                 },
                 
                 async saveToHTML() {
+                    this.isSaving = true;  // Start loading indicator
+                    
                     try {
                         const response = await fetch('/save-to-html', {
                             method: 'POST',
@@ -736,6 +790,8 @@
                     } catch (error) {
                         console.error('Error saving to HTML:', error);
                         alert('Error saving to HTML. Please try again.');
+                    } finally {
+                        this.isSaving = false;  // Stop loading indicator
                     }
                 }
             };

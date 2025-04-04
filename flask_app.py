@@ -1144,17 +1144,17 @@ if __name__ == "__main__":
                 <div x-show="scores" class="grid md:grid-cols-3 gap-4 mb-6">
                     <div class="bg-gray-50 p-4 rounded-lg">
                         <h3 class="font-semibold text-gray-800 mb-2">Clarity</h3>
-                        <div class="text-2xl" x-html="'⭐'.repeat(scores.clarity) + '☆'.repeat(10-scores.clarity)"></div>
+                        <div class="text-2xl" x-html="Array(scores.clarity).fill('&#9733;').concat(Array(10-scores.clarity).fill('&#9734;')).join('')"></div>
                         <p class="text-sm text-gray-600 mt-1">Score: <span x-text="scores.clarity"></span>/10</p>
                     </div>
                     <div class="bg-gray-50 p-4 rounded-lg">
                         <h3 class="font-semibold text-gray-800 mb-2">Relevance</h3>
-                        <div class="text-2xl" x-html="'⭐'.repeat(scores.relevance) + '☆'.repeat(10-scores.relevance)"></div>
+                        <div class="text-2xl" x-html="Array(scores.relevance).fill('&#9733;').concat(Array(10-scores.relevance).fill('&#9734;')).join('')"></div>
                         <p class="text-sm text-gray-600 mt-1">Score: <span x-text="scores.relevance"></span>/10</p>
                     </div>
                     <div class="bg-gray-50 p-4 rounded-lg">
                         <h3 class="font-semibold text-gray-800 mb-2">Confidence</h3>
-                        <div class="text-2xl" x-html="'⭐'.repeat(scores.confidence) + '☆'.repeat(10-scores.confidence)"></div>
+                        <div class="text-2xl" x-html="Array(scores.confidence).fill('&#9733;').concat(Array(10-scores.confidence).fill('&#9734;')).join('')"></div>
                         <p class="text-sm text-gray-600 mt-1">Score: <span x-text="scores.confidence"></span>/10</p>
                     </div>
                 </div>

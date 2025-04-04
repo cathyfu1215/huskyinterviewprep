@@ -1168,41 +1168,32 @@ if __name__ == "__main__":
                 <div x-show="scores" class="grid md:grid-cols-3 gap-4 mb-6">
                     <div class="bg-gray-50 p-4 rounded-lg">
                         <h3 class="font-semibold text-gray-800 mb-2">Clarity</h3>
-                        <div class="text-2xl" x-html="
-                            Array.from({length: 10}, (_, i) => {
-                                if (i < scores.clarity) {
-                                    return `<span class='star-${i+1}'>&#9733;</span>`;
-                                } else {
-                                    return `<span class='star-empty'>&#9734;</span>`;
-                                }
-                            }).join('')
-                        "></div>
+                        <div class="text-2xl">
+                            <template x-for="i in 10" :key="i">
+                                <span :class="i <= scores.clarity ? `star-${i}` : 'star-empty'"
+                                      x-text="i <= scores.clarity ? '★' : '☆'"></span>
+                            </template>
+                        </div>
                         <p class="text-sm text-gray-600 mt-1">Score: <span x-text="scores.clarity"></span>/10</p>
                     </div>
                     <div class="bg-gray-50 p-4 rounded-lg">
                         <h3 class="font-semibold text-gray-800 mb-2">Relevance</h3>
-                        <div class="text-2xl" x-html="
-                            Array.from({length: 10}, (_, i) => {
-                                if (i < scores.relevance) {
-                                    return `<span class='star-${i+1}'>&#9733;</span>`;
-                                } else {
-                                    return `<span class='star-empty'>&#9734;</span>`;
-                                }
-                            }).join('')
-                        "></div>
+                        <div class="text-2xl">
+                            <template x-for="i in 10" :key="i">
+                                <span :class="i <= scores.relevance ? `star-${i}` : 'star-empty'"
+                                      x-text="i <= scores.relevance ? '★' : '☆'"></span>
+                            </template>
+                        </div>
                         <p class="text-sm text-gray-600 mt-1">Score: <span x-text="scores.relevance"></span>/10</p>
                     </div>
                     <div class="bg-gray-50 p-4 rounded-lg">
                         <h3 class="font-semibold text-gray-800 mb-2">Confidence</h3>
-                        <div class="text-2xl" x-html="
-                            Array.from({length: 10}, (_, i) => {
-                                if (i < scores.confidence) {
-                                    return `<span class='star-${i+1}'>&#9733;</span>`;
-                                } else {
-                                    return `<span class='star-empty'>&#9734;</span>`;
-                                }
-                            }).join('')
-                        "></div>
+                        <div class="text-2xl">
+                            <template x-for="i in 10" :key="i">
+                                <span :class="i <= scores.confidence ? `star-${i}` : 'star-empty'"
+                                      x-text="i <= scores.confidence ? '★' : '☆'"></span>
+                            </template>
+                        </div>
                         <p class="text-sm text-gray-600 mt-1">Score: <span x-text="scores.confidence"></span>/10</p>
                     </div>
                 </div>
@@ -1257,6 +1248,32 @@ if __name__ == "__main__":
                         </a>
                     </div>
                 </template>
+            </section>
+            
+            <!-- Step 7: Continue or Start New -->
+            <section x-show="feedbackText && modelAnswer" class="bg-white rounded-xl shadow-md p-6 mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 mr-3">7</span>
+                    Continue Your Practice
+                </h2>
+                
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="bg-gray-50 p-6 rounded-lg text-center">
+                        <h3 class="font-semibold text-gray-800 mb-4">Practice Another Question</h3>
+                        <p class="text-gray-600 mb-4">Continue practicing with the same job information and try another interview question.</p>
+                        <button @click="practiceAnotherQuestion()" class="btn-primary px-6 py-3 rounded-lg font-medium">
+                            <i class="fas fa-redo mr-2"></i> Try Another Question
+                        </button>
+                    </div>
+                    
+                    <div class="bg-gray-50 p-6 rounded-lg text-center">
+                        <h3 class="font-semibold text-gray-800 mb-4">Start Fresh</h3>
+                        <p class="text-gray-600 mb-4">Clear all data and start over with a different company or position.</p>
+                        <button @click="startOver()" class="btn-secondary px-6 py-3 rounded-lg font-medium">
+                            <i class="fas fa-sync mr-2"></i> Start New Practice
+                        </button>
+                    </div>
+                </div>
             </section>
         </main>
         
@@ -1535,7 +1552,12 @@ if __name__ == "__main__":
                         });
                         
                         const data = await response.json();
-                        this.scores = data.scores;
+                        // Ensure scores are properly initialized with numeric values
+                        this.scores = {
+                            clarity: parseInt(data.scores.clarity) || 0,
+                            relevance: parseInt(data.scores.relevance) || 0,
+                            confidence: parseInt(data.scores.confidence) || 0
+                        };
                         this.feedbackText = data.feedback;
                     } catch (error) {
                         console.error('Error analyzing answer:', error);
@@ -1610,6 +1632,44 @@ if __name__ == "__main__":
                     } finally {
                         this.isSaving = false;  // Stop loading indicator
                     }
+                },
+                
+                practiceAnotherQuestion() {
+                    // Reset answer-related data but keep job info
+                    this.selectedQuestion = '';
+                    this.answerText = '';
+                    this.scores = null;
+                    this.feedbackText = '';
+                    this.modelAnswer = '';
+                    this.audioSrc = '';
+                    this.audioPlaying = false;
+                    this.downloadLink = '';
+                    
+                    // Scroll to the questions section
+                    document.querySelector('section:nth-of-type(2)').scrollIntoView({ behavior: 'smooth' });
+                },
+                
+                startOver() {
+                    // Reset everything
+                    this.jobDesc = '';
+                    this.companyInfo = '';
+                    this.resume = '';
+                    this.parsedInfo = {};
+                    this.questions = {};
+                    this.questionHints = {};
+                    this.activeCategory = 'Introduction';
+                    this.selectedQuestion = '';
+                    this.questionsGenerated = false;
+                    this.answerText = '';
+                    this.scores = null;
+                    this.feedbackText = '';
+                    this.modelAnswer = '';
+                    this.audioSrc = '';
+                    this.audioPlaying = false;
+                    this.downloadLink = '';
+                    
+                    // Scroll to top
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
                 }
             };
         }

@@ -36,11 +36,21 @@ def prompt_llm(prompt, show_cost=False):
         cost = (0.1 / 1_000_000) * tokens
         print(f"Estimated cost for {model}: ${cost:.10f}\n")
 
-    response = client.chat.completions.create(
-        model=model,
-        messages=[{"role": "user", "content": prompt}],
-    )
-    return response.choices[0].message.content
+    try:
+        response = client.chat.completions.create(
+            model=model,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        content = response.choices[0].message.content
+        
+        # Safety check for empty responses
+        if not content or len(content.strip()) < 10:
+            print(f"Warning: LLM returned empty or very short response: '{content}'")
+            return "The LLM response was too short or empty. Please try again with more detailed input."
+        return content
+    except Exception as e:
+        print(f"Error calling LLM API: {str(e)}")
+        return "An error occurred while generating content. Please check your API key and try again."
 
 class Analyzer:
     def __init__(self):
@@ -592,23 +602,63 @@ def analyze_answer_endpoint():
     job_desc = data.get('job_desc', session.get('job_desc', ''))
     company_values = data.get('company_values', '')
     
-    scores, feedback = interview_manager.evaluator.evaluate_answer(voice_answer, job_desc, company_values)
+    # Input validation
+    if not voice_answer:
+        default_feedback = "No answer provided to analyze. Please record or type your answer."
+        return jsonify({
+            'scores': {'clarity': 0, 'relevance': 0, 'confidence': 0},
+            'feedback': default_feedback,
+            'formatted_output': default_feedback
+        })
     
-    # Create formatted output
-    stars = lambda score: "⭐" * score + "☆" * (10 - score)
-    combined_output = f"""SCORES:
+    try:
+        scores, feedback = interview_manager.evaluator.evaluate_answer(voice_answer, job_desc, company_values)
+        
+        # Ensure feedback is not empty
+        if not feedback or len(feedback.strip()) < 10:
+            feedback = """I couldn't properly evaluate your answer. Here are some general tips:
+            
+- Structure your response with a clear beginning, middle, and end
+- Relate your experience directly to the job requirements
+- Use specific examples from your past experience
+- Show confidence in your tone and delivery
+            
+Try recording again with these tips in mind."""
+            scores = {'clarity': 5, 'relevance': 5, 'confidence': 5}
+        
+        # Create formatted output
+        stars = lambda score: "⭐" * score + "☆" * (10 - score)
+        combined_output = f"""SCORES:
 Clarity: {stars(scores['clarity'])}
 Relevance: {stars(scores['relevance'])}
 Confidence: {stars(scores['confidence'])}
 
 FEEDBACK:
 {feedback}"""
-    
-    return jsonify({
-        'scores': scores,
-        'feedback': feedback,
-        'formatted_output': combined_output
-    })
+        
+        return jsonify({
+            'scores': scores,
+            'feedback': feedback,
+            'formatted_output': combined_output
+        })
+    except Exception as e:
+        print(f"Error in analyze_answer_endpoint: {str(e)}")
+        default_feedback = "I'm having trouble analyzing your answer right now. This might be due to a connection issue or server load. Please try again in a moment."
+        scores = {'clarity': 5, 'relevance': 5, 'confidence': 5}
+        stars = lambda score: "⭐" * score + "☆" * (10 - score)
+        combined_output = f"""SCORES:
+Clarity: {stars(scores['clarity'])}
+Relevance: {stars(scores['relevance'])}
+Confidence: {stars(scores['confidence'])}
+
+FEEDBACK:
+{default_feedback}"""
+        
+        return jsonify({
+            'scores': scores,
+            'feedback': default_feedback,
+            'formatted_output': combined_output
+        })
 
 @app.route('/generate-model-answer', methods=['POST'])
 def generate_model_answer_endpoint():
@@ -619,9 +669,45 @@ def generate_model_answer_endpoint():
     resume = data.get('resume', session.get('resume', ''))
     voice_answer = data.get('answer_text', '')
     
-    model_answer = interview_manager.drafter.generate_answer(question, company_info, job_desc, resume, voice_answer)
+    # Input validation
+    if not question:
+        return jsonify({
+            'model_answer': 'No question provided. Please select a question first.'
+        })
     
-    return jsonify({'model_answer': model_answer})
+    try:
+        model_answer = interview_manager.drafter.generate_answer(question, company_info, job_desc, resume, voice_answer)
+        
+        # Ensure model answer is not empty
+        if not model_answer or len(model_answer.strip()) < 10:
+            model_answer = f"""I couldn't generate a complete sample answer for this question: "{question}"
+            
+Here's a general structure you can follow:
+
+1. Begin with a brief introduction relevant to the question
+2. Use the STAR method for behavioral questions:
+   - Situation: Describe the context
+   - Task: Explain your responsibility
+   - Action: Detail the steps you took
+   - Result: Share the outcome and what you learned
+
+3. Connect your answer to the specific job requirements
+4. Keep your answer concise (about 1-2 minutes when spoken)
+5. Practice your delivery to sound natural and confident"""
+        
+        return jsonify({'model_answer': model_answer})
+    except Exception as e:
+        print(f"Error in generate_model_answer_endpoint: {str(e)}")
+        default_answer = f"""I'm having trouble generating a sample answer for the question: "{question}"
+
+Here are some general tips for this type of question:
+- Use the STAR method: Situation, Task, Action, Result
+- Relate your answer to the job you're applying for
+- Be specific and use concrete examples
+- Keep your answer concise and to the point
+- Practice your delivery to sound confident and prepared"""
+        
+        return jsonify({'model_answer': default_answer})
 
 @app.route('/text-to-speech', methods=['POST'])
 def text_to_speech_endpoint():
@@ -1076,7 +1162,7 @@ if __name__ == "__main__":
                 <div class="bg-gray-50 p-6 rounded-lg">
                     <h3 class="font-semibold text-gray-800 mb-3">Detailed Feedback</h3>
                     <div class="prose max-w-none text-gray-700 whitespace-pre-line leading-relaxed" 
-                         x-html="feedbackText.replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>')"></div>
+                         x-text="feedbackText"></div>
                 </div>
             </section>
             
@@ -1097,7 +1183,7 @@ if __name__ == "__main__":
                     <div class="bg-gray-50 p-6 rounded-lg">
                         <h3 class="font-semibold text-gray-800 mb-3">Sample Professional Answer</h3>
                         <div class="prose max-w-none text-gray-700 whitespace-pre-line leading-relaxed" 
-                             x-html="modelAnswer.replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>')"></div>
+                             x-text="modelAnswer"></div>
                     </div>
                 </template>
             </section>

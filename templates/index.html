@@ -387,10 +387,7 @@
                 <div class="bg-gray-50 p-6 rounded-lg">
                     <h3 class="font-semibold text-gray-800 mb-3">Detailed Feedback</h3>
                     <div class="prose max-w-none text-gray-700 whitespace-pre-line leading-relaxed" 
-                         x-html="feedbackText.replace(/
-
-/g, '<br><br>').replace(/
-/g, '<br>')"></div>
+                         x-text="feedbackText"></div>
                 </div>
             </section>
             
@@ -411,10 +408,7 @@
                     <div class="bg-gray-50 p-6 rounded-lg">
                         <h3 class="font-semibold text-gray-800 mb-3">Sample Professional Answer</h3>
                         <div class="prose max-w-none text-gray-700 whitespace-pre-line leading-relaxed" 
-                             x-html="modelAnswer.replace(/
-
-/g, '<br><br>').replace(/
-/g, '<br>')"></div>
+                             x-text="modelAnswer"></div>
                     </div>
                 </template>
             </section>

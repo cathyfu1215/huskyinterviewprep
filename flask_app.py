@@ -411,6 +411,7 @@ def save_to_html(job_desc, company_info, resume, company_values, tech_skills, so
     <html>
     <head>
         <title>Interview Prep Summary</title>
+        <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
         <style>
             body {{
                 font-family: 'Arial', sans-serif;
@@ -791,7 +792,7 @@ if __name__ == "__main__":
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Husky Interview Prep</title>
-    <!-- Tailwind CSS -->
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>

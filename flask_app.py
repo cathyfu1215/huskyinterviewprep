@@ -1281,8 +1281,8 @@ if __name__ == "__main__":
         <!-- Footer -->
         <footer class="bg-gray-800 py-8 px-4 text-center">
             <div class="container">
-                <p class="text-gray-300">Husky Interview Prep © 2023. All rights reserved.</p>
-                <p class="text-gray-400 text-sm mt-2">Powered by AI and created to help you succeed.</p>
+                <p class="text-gray-300">Husky Interview Prep © 2025. All rights reserved.</p>
+                <p class="text-gray-400 text-sm mt-2">Powered by Cathy and AI and created to help you succeed.</p>
             </div>
         </footer>
     </div>

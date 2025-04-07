@@ -435,153 +435,166 @@ def save_to_html(job_desc, company_info, resume, company_values, tech_skills, so
     html_content = f"""
     <html>
     <head>
-        <title>Interview Prep Summary</title>
-        <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+        <title>Interview Preparation Summary</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <style>
             body {{
-                font-family: 'Arial', sans-serif;
-                margin: 0;
-                padding: 20px;
-                background-color: #f4f4f9;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                line-height: 1.6;
                 color: #333;
+                margin: 0;
+                padding: 0;
+                background-color: #f5f7fa;
+            }}
+            .container {{
+                max-width: 1000px;
+                margin: 0 auto;
+                padding: 20px;
+            }}
+            header {{
+                background-color: #4f46e5;
+                color: white;
+                padding: 30px 20px;
+                margin-bottom: 30px;
+            }}
+            .company-info {{
+                margin-top: 10px;
+                font-size: 1.1em;
+                color: rgba(255, 255, 255, 0.9);
             }}
             h1 {{
-                text-align: center;
-                margin-bottom: 40px;
-                color: #4f46e5;
-                font-size: 36px;
-                font-weight: bold;
+                margin: 0;
+                font-size: 2.5em;
             }}
             h2 {{
-                margin-top: 30px;
-                border-bottom: 2px solid #ddd;
+                color: #4f46e5;
+                border-bottom: 2px solid #4f46e5;
                 padding-bottom: 10px;
-                color: #333;
-                font-size: 24px;
-                font-weight: bold;
-            }}
-            p {{
-                line-height: 1.6;
-                font-size: 16px;
-                margin-bottom: 20px;
-            }}
-            ul {{
-                list-style-type: none;
-                padding: 0;
-            }}
-            li {{
-                background: #fff;
-                margin: 10px 0;
-                padding: 15px;
-                border-radius: 8px;
-                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-                font-size: 16px;
+                margin-top: 30px;
             }}
             .section {{
-                margin-bottom: 40px;
-                padding: 20px;
-                background-color: #fff;
+                background: white;
+                padding: 25px;
+                margin-bottom: 25px;
                 border-radius: 8px;
-                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             }}
             .section-title {{
+                margin-top: 0;
                 color: #4f46e5;
-                font-size: 20px;
-                font-weight: bold;
-                margin-bottom: 10px;
-            }}
-            .content {{
-                line-height: 1.6;
-                font-size: 16px;
             }}
             .info-item {{
-                background: #fff;
-                margin: 10px 0;
+                margin-bottom: 10px;
+                list-style-type: none;
+            }}
+            ul {{
+                padding-left: 20px;
+            }}
+            .feedback {{
+                background-color: #f0f9ff;
+                border-left: 4px solid #38bdf8;
                 padding: 15px;
-                border-radius: 8px;
-                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-                font-size: 16px;
+                margin: 15px 0;
             }}
-            .spinner {{
-                border: 2px solid rgba(255, 255, 255, 0.3);
-                border-radius: 50%;
-                border-top: 2px solid white;
-                width: 16px;
-                height: 16px;
-                animation: spin 1s linear infinite;
-                display: inline-block;
-                vertical-align: middle;
-                margin-right: 8px;
+            .model-answer {{
+                background-color: #f0fdf4;
+                border-left: 4px solid #4ade80;
+                padding: 15px;
+                margin: 15px 0;
             }}
-            @keyframes spin {{
-                0% {{ transform: rotate(0deg); }}
-                100% {{ transform: rotate(360deg); }}
+            .question {{
+                font-weight: bold;
+                font-size: 1.2em;
+                margin-bottom: 10px;
+                color: #1e293b;
             }}
-            button:disabled {{
-                opacity: 0.7;
-                cursor: not-allowed;
+            .user-answer {{
+                background-color: #fef2f2;
+                border-left: 4px solid #f87171;
+                padding: 15px;
+                margin: 15px 0;
             }}
-            .star-1 {{ color: #FF5252; }} /* Red */
-            .star-2 {{ color: #FF7F00; }} /* Orange */
-            .star-3 {{ color: #FFFF00; }} /* Yellow */
-            .star-4 {{ color: #7FFF00; }} /* Chartreuse */
-            .star-5 {{ color: #00FF00; }} /* Green */
-            .star-6 {{ color: #00FFFF; }} /* Cyan */
-            .star-7 {{ color: #007FFF; }} /* Azure */
-            .star-8 {{ color: #0000FF; }} /* Blue */
-            .star-9 {{ color: #7F00FF; }} /* Violet */
-            .star-10 {{ color: #FF00FF; }} /* Magenta */
-            .star-empty {{ color: #cccccc; }} /* Gray for empty stars */
+            footer {{
+                text-align: center;
+                padding: 20px;
+                color: #64748b;
+                font-size: 0.9em;
+                margin-top: 40px;
+            }}
         </style>
     </head>
     <body>
-        <h1>Interview Prep Summary</h1>
+        <header>
+            <div class="container">
+                <h1>Interview Preparation Summary</h1>
+                <div class="company-info">
+                    <strong>Company:</strong> {company_values.split(':')[0] if ':' in company_values else 'Not specified'} |
+                    <strong>Position:</strong> {tech_skills.split(':')[0] if ':' in tech_skills else 'Not specified'}
+                </div>
+                <div class="timestamp">Generated on {datetime.now().strftime("%B %d, %Y at %I:%M %p")}</div>
+            </div>
+        </header>
+        <div class="container">
+        <div class="section">
+            <h2 class="section-title">Parsed Information</h2>
+            <ul>
+                <li class="info-item"><strong>Company Values:</strong> {company_values}</li>
+                <li class="info-item"><strong>Tech Skills:</strong> {tech_skills}</li>
+                <li class="info-item"><strong>Soft Skills:</strong> {soft_skills}</li>
+                <li class="info-item"><strong>Job Duties:</strong> {job_duties}</li>
+            </ul>
+        </div>
+        
         <div class="section">
             <h2 class="section-title">Job Description</h2>
             <div class="content">{job_desc}</div>
         </div>
+        
         <div class="section">
             <h2 class="section-title">Company Information</h2>
             <div class="content">{company_info}</div>
         </div>
+        
         <div class="section">
             <h2 class="section-title">Your Resume</h2>
             <div class="content">{resume}</div>
         </div>
+        
         <div class="section">
-            <h2 class="section-title">Parsed Information</h2>
-            <ul>
-                <li class="info-item"><strong>Company Name:</strong> {parsed_info.company_name}</li>
-                <li class="info-item"><strong>Position Title:</strong> {parsed_info.position_title}</li>
-                <li class="info-item"><strong>Company Values:</strong> {parsed_info.company_values}</li>
-                <li class="info-item"><strong>Tech Skills:</strong> {parsed_info.tech_skills}</li>
-                <li class="info-item"><strong>Soft Skills:</strong> {parsed_info.soft_skills}</li>
-                <li class="info-item"><strong>Job Duties:</strong> {parsed_info.job_duties}</li>
-            </ul>
+            <h2 class="section-title">Interview Question</h2>
+            <div class="question">{selected_question}</div>
         </div>
+        
         <div class="section">
-            <h2 class="section-title">Selected Question</h2>
-            <div class="content">{selected_question}</div>
+            <h2 class="section-title">Your Answer</h2>
+            <div class="user-answer">{answer_text}</div>
         </div>
-        <div class="section">
-            <h2 class="section-title">Your Answer (Transcribed)</h2>
-            <div class="content">{answer_text}</div>
-        </div>
+        
         <div class="section">
             <h2 class="section-title">Feedback</h2>
-            <div class="content">{feedback}</div>
+            <div class="feedback">{feedback}</div>
         </div>
+        
         <div class="section">
             <h2 class="section-title">Model Answer</h2>
-            <div class="content">{model_answer}</div>
+            <div class="model-answer">{model_answer}</div>
+        </div>
+        
+        <footer>
+            <p>Husky Interview Prep &copy; 2025</p>
+            <p>Generated on {datetime.now().strftime("%B %d, %Y at %I:%M %p")}</p>
+        </footer>
         </div>
     </body>
     </html>
     """
-    # Use a temporary file to store the HTML content for download
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".html") as tmp_file:
+    
+    # Create a temporary file to store the HTML content
+    with tempfile.NamedTemporaryFile(delete=False, suffix='.html') as tmp_file:
         tmp_file.write(html_content.encode('utf-8'))
         tmp_file_path = tmp_file.name
+    
     return tmp_file_path
 
 @app.route('/')
@@ -1115,17 +1128,33 @@ if __name__ == "__main__":
                     Record Your Answer
                 </h2>
                 
-                <div class="grid md:grid-cols-3 gap-6">
-                    <!-- Interviewer Column -->
-                    <div class="md:col-span-1">
-                        <div class="text-center">
-                            <div class="rounded-lg overflow-hidden mb-4 mx-auto w-48 h-48 flex items-center justify-center bg-gray-100">
+                <!-- New company and position box with better alignment -->
+                <div class="bg-indigo-50 p-4 rounded-lg border border-indigo-100 mb-6">
+                    <div class="flex flex-row items-center justify-start">
+                        <div class="flex items-center mr-8">
+                            <span class="text-sm font-medium text-gray-600">Company:</span>
+                            <span class="ml-2 font-semibold text-indigo-700" x-text="parsedInfo.company_name || 'Not specified'"></span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-sm font-medium text-gray-600">Position:</span>
+                            <span class="ml-2 font-semibold text-indigo-700" x-text="parsedInfo.position_title || 'Not specified'"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- New grid layout for interview question and recording section -->
+                <div class="grid md:grid-cols-12 gap-4 mb-6">
+                    <!-- Interviewer Column (35% width) -->
+                    <div class="md:col-span-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Interviewer</label>
+                        <div class="text-center p-4 bg-gray-50 rounded-lg border border-gray-200 h-full">
+                            <div class="rounded-lg overflow-hidden mb-4 mx-auto w-32 h-32 flex items-center justify-center bg-gray-100">
                                 <img src="/static/interviewer.png" alt="Interviewer" class="max-w-full max-h-full">
                             </div>
                             
                             <div class="mb-4">
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Voice Accent</label>
-                                <select x-model="voiceOption" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                <select x-model="voiceOption" class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
                                     <option value="US English">US English</option>
                                     <option value="UK English">UK English</option>
                                     <option value="Australian English">Australian English</option>
@@ -1133,13 +1162,10 @@ if __name__ == "__main__":
                                     <option value="French">French</option>
                                     <option value="German">German</option>
                                     <option value="Spanish">Spanish</option>
-                                    <option value="Italian">Italian</option>
-                                    <option value="Japanese">Japanese</option>
-                                    <option value="Korean">Korean</option>
                                 </select>
                             </div>
                             
-                            <button @click="readQuestionAloud()" :disabled="isReadingAloud" class="btn-secondary w-full px-4 py-2 rounded-lg font-medium flex items-center justify-center">
+                            <button @click="readQuestionAloud()" :disabled="isReadingAloud" class="btn-secondary w-full px-3 py-2 text-sm rounded-lg font-medium flex items-center justify-center">
                                 <span class="spinner" x-show="isReadingAloud"></span>
                                 <i class="fas fa-volume-up mr-2" x-show="!isReadingAloud"></i>
                                 <span x-text="isReadingAloud ? 'Reading...' : 'Read Question Aloud'"></span>
@@ -1153,49 +1179,52 @@ if __name__ == "__main__":
                         </div>
                     </div>
                     
-                    <!-- Question and Recording Column -->
-                    <div class="md:col-span-2">
-                        <div class="mb-6">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Current Question</label>
-                            <div class="p-4 bg-indigo-50 rounded-lg border border-indigo-100">
-                                <p class="text-gray-800 font-medium" x-text="selectedQuestion"></p>
-                            </div>
-                            
-                            <div class="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                                <h3 class="font-medium text-gray-800 mb-2">How to Answer</h3>
-                                <p class="text-gray-700" x-text="questionHints[selectedQuestion] || 'No specific hint available for this question.'"></p>
-                            </div>
+                    <!-- Question Column (65% width) -->
+                    <div class="md:col-span-8">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Current Question</label>
+                        <div class="p-4 bg-indigo-50 rounded-lg border border-indigo-100">
+                            <p class="text-gray-800 font-medium" x-text="selectedQuestion"></p>
                         </div>
                         
-                        <div class="mb-6">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Record Your Answer</label>
-                            <div class="flex flex-col items-center">
-                                <button @click="toggleRecording()" class="mb-4 relative">
-                                    <div :class="{'recording-pulse': isRecording}" class="w-16 h-16 rounded-full bg-white border-2 border-gray-300 flex items-center justify-center">
-                                        <i :class="isRecording ? 'fa-stop text-red-500' : 'fa-microphone text-gray-700'" class="fas text-2xl"></i>
-                                    </div>
-                                </button>
-                                <p x-text="recordingStatus" class="text-sm font-medium text-gray-600"></p>
-                            </div>
-                        </div>
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Your Answer (Transcribed)</label>
-                            <textarea 
-                                x-model="answerText" 
-                                class="w-full h-40 px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" 
-                                placeholder="Your transcribed answer will appear here..."
-                            ></textarea>
-                        </div>
-                        
-                        <div class="mt-4">
-                            <button @click="analyzeAnswer()" :disabled="isAnalyzingAnswer" class="btn-primary px-6 py-3 rounded-lg font-medium flex items-center">
-                                <span class="spinner" x-show="isAnalyzingAnswer"></span>
-                                <i class="fas fa-chart-line mr-2" x-show="!isAnalyzingAnswer"></i>
-                                <span x-text="isAnalyzingAnswer ? 'Analyzing...' : 'Analyze Answer'"></span>
-                            </button>
+                        <div class="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                            <h3 class="font-medium text-gray-800 mb-2">How to Answer</h3>
+                            <p class="text-gray-700" x-text="questionHints[selectedQuestion] || 'No specific hint available for this question.'"></p>
                         </div>
                     </div>
+                </div>
+
+                <!-- Record Answer Section in 35:65 ratio layout -->
+                <div class="grid md:grid-cols-12 gap-4">
+                    <!-- Recording Button Column (35% width) -->
+                    <div class="md:col-span-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Record Your Answer</label>
+                        <div class="flex flex-col items-center justify-center h-full p-4 bg-gray-50 rounded-lg border border-gray-200">
+                            <button @click="toggleRecording()" class="mb-4 relative">
+                                <div :class="{'recording-pulse': isRecording}" class="w-16 h-16 rounded-full bg-white border-2 border-gray-300 flex items-center justify-center">
+                                    <i :class="isRecording ? 'fa-stop text-red-500' : 'fa-microphone text-gray-700'" class="fas text-2xl"></i>
+                                </div>
+                            </button>
+                            <p x-text="recordingStatus" class="text-sm font-medium text-gray-600 text-center"></p>
+                        </div>
+                    </div>
+                    
+                    <!-- Transcription Textarea Column (65% width) -->
+                    <div class="md:col-span-8">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Your Answer (Transcribed)</label>
+                        <textarea 
+                            x-model="answerText" 
+                            class="w-full h-40 px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" 
+                            placeholder="Your transcribed answer will appear here..."
+                        ></textarea>
+                    </div>
+                </div>
+                
+                <div class="mt-6 flex justify-center">
+                    <button @click="analyzeAnswer()" :disabled="isAnalyzingAnswer" class="btn-primary px-6 py-3 rounded-lg font-medium flex items-center">
+                        <span class="spinner" x-show="isAnalyzingAnswer"></span>
+                        <i class="fas fa-chart-line mr-2" x-show="!isAnalyzingAnswer"></i>
+                        <span x-text="isAnalyzingAnswer ? 'Analyzing...' : 'Analyze Answer'"></span>
+                    </button>
                 </div>
             </section>
             

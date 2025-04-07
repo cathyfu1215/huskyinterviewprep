@@ -301,17 +301,33 @@
                     Record Your Answer
                 </h2>
                 
-                <div class="grid md:grid-cols-3 gap-6">
-                    <!-- Interviewer Column -->
-                    <div class="md:col-span-1">
-                        <div class="text-center">
-                            <div class="rounded-lg overflow-hidden mb-4 mx-auto w-48 h-48 flex items-center justify-center bg-gray-100">
+                <!-- New company and position box with better alignment -->
+                <div class="bg-indigo-50 p-4 rounded-lg border border-indigo-100 mb-6">
+                    <div class="flex flex-row items-center justify-start">
+                        <div class="flex items-center mr-8">
+                            <span class="text-sm font-medium text-gray-600">Company:</span>
+                            <span class="ml-2 font-semibold text-indigo-700" x-text="parsedInfo.company_name || 'Not specified'"></span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-sm font-medium text-gray-600">Position:</span>
+                            <span class="ml-2 font-semibold text-indigo-700" x-text="parsedInfo.position_title || 'Not specified'"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- New grid layout for interview question and recording section -->
+                <div class="grid md:grid-cols-12 gap-4 mb-6">
+                    <!-- Interviewer Column (35% width) -->
+                    <div class="md:col-span-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Interviewer</label>
+                        <div class="text-center p-4 bg-gray-50 rounded-lg border border-gray-200 h-full">
+                            <div class="rounded-lg overflow-hidden mb-4 mx-auto w-32 h-32 flex items-center justify-center bg-gray-100">
                                 <img src="/static/interviewer.png" alt="Interviewer" class="max-w-full max-h-full">
                             </div>
                             
                             <div class="mb-4">
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Voice Accent</label>
-                                <select x-model="voiceOption" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                <select x-model="voiceOption" class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
                                     <option value="US English">US English</option>
                                     <option value="UK English">UK English</option>
                                     <option value="Australian English">Australian English</option>
@@ -319,13 +335,10 @@
                                     <option value="French">French</option>
                                     <option value="German">German</option>
                                     <option value="Spanish">Spanish</option>
-                                    <option value="Italian">Italian</option>
-                                    <option value="Japanese">Japanese</option>
-                                    <option value="Korean">Korean</option>
                                 </select>
                             </div>
                             
-                            <button @click="readQuestionAloud()" :disabled="isReadingAloud" class="btn-secondary w-full px-4 py-2 rounded-lg font-medium flex items-center justify-center">
+                            <button @click="readQuestionAloud()" :disabled="isReadingAloud" class="btn-secondary w-full px-3 py-2 text-sm rounded-lg font-medium flex items-center justify-center">
                                 <span class="spinner" x-show="isReadingAloud"></span>
                                 <i class="fas fa-volume-up mr-2" x-show="!isReadingAloud"></i>
                                 <span x-text="isReadingAloud ? 'Reading...' : 'Read Question Aloud'"></span>
@@ -339,49 +352,52 @@
                         </div>
                     </div>
                     
-                    <!-- Question and Recording Column -->
-                    <div class="md:col-span-2">
-                        <div class="mb-6">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Current Question</label>
-                            <div class="p-4 bg-indigo-50 rounded-lg border border-indigo-100">
-                                <p class="text-gray-800 font-medium" x-text="selectedQuestion"></p>
-                            </div>
-                            
-                            <div class="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                                <h3 class="font-medium text-gray-800 mb-2">How to Answer</h3>
-                                <p class="text-gray-700" x-text="questionHints[selectedQuestion] || 'No specific hint available for this question.'"></p>
-                            </div>
+                    <!-- Question Column (65% width) -->
+                    <div class="md:col-span-8">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Current Question</label>
+                        <div class="p-4 bg-indigo-50 rounded-lg border border-indigo-100">
+                            <p class="text-gray-800 font-medium" x-text="selectedQuestion"></p>
                         </div>
                         
-                        <div class="mb-6">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Record Your Answer</label>
-                            <div class="flex flex-col items-center">
-                                <button @click="toggleRecording()" class="mb-4 relative">
-                                    <div :class="{'recording-pulse': isRecording}" class="w-16 h-16 rounded-full bg-white border-2 border-gray-300 flex items-center justify-center">
-                                        <i :class="isRecording ? 'fa-stop text-red-500' : 'fa-microphone text-gray-700'" class="fas text-2xl"></i>
-                                    </div>
-                                </button>
-                                <p x-text="recordingStatus" class="text-sm font-medium text-gray-600"></p>
-                            </div>
-                        </div>
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Your Answer (Transcribed)</label>
-                            <textarea 
-                                x-model="answerText" 
-                                class="w-full h-40 px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" 
-                                placeholder="Your transcribed answer will appear here..."
-                            ></textarea>
-                        </div>
-                        
-                        <div class="mt-4">
-                            <button @click="analyzeAnswer()" :disabled="isAnalyzingAnswer" class="btn-primary px-6 py-3 rounded-lg font-medium flex items-center">
-                                <span class="spinner" x-show="isAnalyzingAnswer"></span>
-                                <i class="fas fa-chart-line mr-2" x-show="!isAnalyzingAnswer"></i>
-                                <span x-text="isAnalyzingAnswer ? 'Analyzing...' : 'Analyze Answer'"></span>
-                            </button>
+                        <div class="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                            <h3 class="font-medium text-gray-800 mb-2">How to Answer</h3>
+                            <p class="text-gray-700" x-text="questionHints[selectedQuestion] || 'No specific hint available for this question.'"></p>
                         </div>
                     </div>
+                </div>
+
+                <!-- Record Answer Section in 35:65 ratio layout -->
+                <div class="grid md:grid-cols-12 gap-4">
+                    <!-- Recording Button Column (35% width) -->
+                    <div class="md:col-span-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Record Your Answer</label>
+                        <div class="flex flex-col items-center justify-center h-full p-4 bg-gray-50 rounded-lg border border-gray-200">
+                            <button @click="toggleRecording()" class="mb-4 relative">
+                                <div :class="{'recording-pulse': isRecording}" class="w-16 h-16 rounded-full bg-white border-2 border-gray-300 flex items-center justify-center">
+                                    <i :class="isRecording ? 'fa-stop text-red-500' : 'fa-microphone text-gray-700'" class="fas text-2xl"></i>
+                                </div>
+                            </button>
+                            <p x-text="recordingStatus" class="text-sm font-medium text-gray-600 text-center"></p>
+                        </div>
+                    </div>
+                    
+                    <!-- Transcription Textarea Column (65% width) -->
+                    <div class="md:col-span-8">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Your Answer (Transcribed)</label>
+                        <textarea 
+                            x-model="answerText" 
+                            class="w-full h-40 px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" 
+                            placeholder="Your transcribed answer will appear here..."
+                        ></textarea>
+                    </div>
+                </div>
+                
+                <div class="mt-6 flex justify-center">
+                    <button @click="analyzeAnswer()" :disabled="isAnalyzingAnswer" class="btn-primary px-6 py-3 rounded-lg font-medium flex items-center">
+                        <span class="spinner" x-show="isAnalyzingAnswer"></span>
+                        <i class="fas fa-chart-line mr-2" x-show="!isAnalyzingAnswer"></i>
+                        <span x-text="isAnalyzingAnswer ? 'Analyzing...' : 'Analyze Answer'"></span>
+                    </button>
                 </div>
             </section>
             

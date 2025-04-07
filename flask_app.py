@@ -62,8 +62,21 @@ class Analyzer:
         SYSTEM: You are an expert career coach and interviewer with over 30 years of experience in the tech industry. Your task is to thoroughly analyze the job description and company values to extract and classify all relevant information.
 
         INSTRUCTIONS:
-        1. Analyze the entire text for any skills, requirements, or values, looking for both explicit and implicit mentions.
-        2. Classify all found information into these categories:
+        1. First, identify the company name and position title.
+        2. Then analyze the entire text for any skills, requirements, or values, looking for both explicit and implicit mentions.
+        3. Classify all found information into these categories:
+
+        Company Name:
+        - Extract the company name from the text
+        - If not explicitly stated, write "Company name not specified"
+
+        Position Title:
+        - Extract the job title/position from the text
+        - It contains no additional adjectives or adverbs, only the job title
+        - If not explicitly stated, write "Position title not specified"
+        - Example: From "NetNation is seeking Junior to Mid-Range UX/UI Software Developers"
+          Extract only: "UX/UI Software Developer"
+          (Remove level indicators like "Junior to Mid-Range")
 
         Company Values:
         - Look for mentions of culture, principles, mission, values
@@ -89,6 +102,12 @@ class Analyzer:
         - Team and organizational contributions
 
         FORMAT YOUR RESPONSE EXACTLY AS FOLLOWS:
+        **Company Name:**
+        [company name]
+
+        **Position Title:**
+        [position title]
+        
         **Key Company Values:**
         - [value 1]
         - [value 2]
@@ -112,18 +131,24 @@ class Analyzer:
         """
         response = prompt_llm(prompt)
         
-        # Use regular expressions to extract the relevant sections
+        # Add new regex patterns for company name and position title
+        company_name_match = re.search(r"\*\*Company Name:\*\*(.*?)\*\*Position Title:\*\*", response, re.DOTALL)
+        position_title_match = re.search(r"\*\*Position Title:\*\*(.*?)\*\*Key Company Values:\*\*", response, re.DOTALL)
         company_values_match = re.search(r"\*\*Key Company Values:\*\*(.*?)\*\*Essential Technical Skills:\*\*", response, re.DOTALL)
         tech_skills_match = re.search(r"\*\*Essential Technical Skills:\*\*(.*?)\*\*Necessary Soft Skills:\*\*", response, re.DOTALL)
         soft_skills_match = re.search(r"\*\*Necessary Soft Skills:\*\*(.*?)\*\*Summary of Key Job Duties:\*\*", response, re.DOTALL)
         job_duties_match = re.search(r"\*\*Summary of Key Job Duties:\*\*(.*)", response, re.DOTALL)
 
+        company_name = company_name_match.group(1).strip() if company_name_match else "Company name not specified"
+        position_title = position_title_match.group(1).strip() if position_title_match else "Position title not specified"
         company_values = company_values_match.group(1).strip() if company_values_match else "Not found"
         tech_skills = tech_skills_match.group(1).strip() if tech_skills_match else "Not found"
         soft_skills = soft_skills_match.group(1).strip() if soft_skills_match else "Not found"
         job_duties = job_duties_match.group(1).strip() if job_duties_match else "Not found"
 
         parsed_info = {
+            "company_name": company_name,
+            "position_title": position_title,
             "company_values": company_values,
             "tech_skills": tech_skills,
             "soft_skills": soft_skills,
@@ -526,10 +551,12 @@ def save_to_html(job_desc, company_info, resume, company_values, tech_skills, so
         <div class="section">
             <h2 class="section-title">Parsed Information</h2>
             <ul>
-                <li class="info-item"><strong>Company Values:</strong> {company_values}</li>
-                <li class="info-item"><strong>Tech Skills:</strong> {tech_skills}</li>
-                <li class="info-item"><strong>Soft Skills:</strong> {soft_skills}</li>
-                <li class="info-item"><strong>Job Duties:</strong> {job_duties}</li>
+                <li class="info-item"><strong>Company Name:</strong> {parsed_info.company_name}</li>
+                <li class="info-item"><strong>Position Title:</strong> {parsed_info.position_title}</li>
+                <li class="info-item"><strong>Company Values:</strong> {parsed_info.company_values}</li>
+                <li class="info-item"><strong>Tech Skills:</strong> {parsed_info.tech_skills}</li>
+                <li class="info-item"><strong>Soft Skills:</strong> {parsed_info.soft_skills}</li>
+                <li class="info-item"><strong>Job Duties:</strong> {parsed_info.job_duties}</li>
             </ul>
         </div>
         <div class="section">
@@ -983,6 +1010,19 @@ if __name__ == "__main__":
                 
                 <template x-if="parsedInfo.company_values">
                     <div class="mt-8">
+                        <!-- Add new section for company name and position title -->
+                        <div class="grid md:grid-cols-2 gap-6 mb-8">
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <h3 class="font-semibold text-gray-800 mb-2">Company Name</h3>
+                                <p class="text-gray-700" x-text="parsedInfo.company_name"></p>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <h3 class="font-semibold text-gray-800 mb-2">Position Title</h3>
+                                <p class="text-gray-700" x-text="parsedInfo.position_title"></p>
+                            </div>
+                        </div>
+                        
+                        <!-- Existing grid for other information -->
                         <div class="grid md:grid-cols-2 gap-6 mb-8">
                             <div class="bg-gray-50 p-4 rounded-lg">
                                 <h3 class="font-semibold text-gray-800 mb-2">Company Values</h3>
@@ -1602,7 +1642,7 @@ if __name__ == "__main__":
                 },
                 
                 async saveToHTML() {
-                    this.isSaving = true;  // Start loading indicator
+                    this.isSaving = true;
                     
                     try {
                         const response = await fetch('/save-to-html', {
@@ -1614,6 +1654,8 @@ if __name__ == "__main__":
                                 job_desc: this.jobDesc,
                                 company_info: this.companyInfo,
                                 resume: this.resume,
+                                company_name: this.parsedInfo.company_name,
+                                position_title: this.parsedInfo.position_title,
                                 company_values: this.parsedInfo.company_values,
                                 tech_skills: this.parsedInfo.tech_skills,
                                 soft_skills: this.parsedInfo.soft_skills,
@@ -1631,7 +1673,7 @@ if __name__ == "__main__":
                         console.error('Error saving to HTML:', error);
                         alert('Error saving to HTML. Please try again.');
                     } finally {
-                        this.isSaving = false;  // Stop loading indicator
+                        this.isSaving = false;
                     }
                 },
                 

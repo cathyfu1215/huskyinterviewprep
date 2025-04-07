@@ -196,6 +196,19 @@
                 
                 <template x-if="parsedInfo.company_values">
                     <div class="mt-8">
+                        <!-- Add new section for company name and position title -->
+                        <div class="grid md:grid-cols-2 gap-6 mb-8">
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <h3 class="font-semibold text-gray-800 mb-2">Company Name</h3>
+                                <p class="text-gray-700" x-text="parsedInfo.company_name"></p>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <h3 class="font-semibold text-gray-800 mb-2">Position Title</h3>
+                                <p class="text-gray-700" x-text="parsedInfo.position_title"></p>
+                            </div>
+                        </div>
+                        
+                        <!-- Existing grid for other information -->
                         <div class="grid md:grid-cols-2 gap-6 mb-8">
                             <div class="bg-gray-50 p-4 rounded-lg">
                                 <h3 class="font-semibold text-gray-800 mb-2">Company Values</h3>
@@ -815,7 +828,7 @@
                 },
                 
                 async saveToHTML() {
-                    this.isSaving = true;  // Start loading indicator
+                    this.isSaving = true;
                     
                     try {
                         const response = await fetch('/save-to-html', {
@@ -827,6 +840,8 @@
                                 job_desc: this.jobDesc,
                                 company_info: this.companyInfo,
                                 resume: this.resume,
+                                company_name: this.parsedInfo.company_name,
+                                position_title: this.parsedInfo.position_title,
                                 company_values: this.parsedInfo.company_values,
                                 tech_skills: this.parsedInfo.tech_skills,
                                 soft_skills: this.parsedInfo.soft_skills,
@@ -844,7 +859,7 @@
                         console.error('Error saving to HTML:', error);
                         alert('Error saving to HTML. Please try again.');
                     } finally {
-                        this.isSaving = false;  // Stop loading indicator
+                        this.isSaving = false;
                     }
                 },
                 

@@ -1,6 +1,5 @@
 # Husky Interview Prep
 
-![Husky Interview Prep](https://img.youtube.com/vi/iYD9pknqTcg/maxresdefault.jpg)
 
 ## About the Project
 

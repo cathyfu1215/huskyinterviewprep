@@ -1,0 +1,23 @@
+-r requirements.txt
+
+# Testing dependencies
+pytest==8.3.5
+pytest-cov==5.0.0
+pytest-mock==3.14.0
+coverage==7.4.4
+
+# Development tools
+black==24.5.0  # Code formatting
+isort==5.13.2  # Import sorting
+flake8==7.0.0  # Linting
+autopep8==2.1.0  # Code formatting
+mypy==1.9.0  # Type checking
+pre-commit==3.7.0  # Git pre-commit hooks
+
+# Documentation
+Sphinx==7.3.7
+sphinx-rtd-theme==2.0.0
+
+# Debugging and profiling
+ipython==8.22.1
+ipdb==0.13.13 

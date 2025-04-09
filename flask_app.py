@@ -4,7 +4,7 @@ import speech_recognition as sr
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 import requests
-from together import Together
+import together
 import json
 import re
 from dotenv import load_dotenv
@@ -24,7 +24,7 @@ app.secret_key = os.urandom(24)
 
 # Initialize Together client
 your_api_key = os.getenv("TOGETHER_API_KEY")
-client = Together(api_key=your_api_key)
+together.api_key = your_api_key
 
 def prompt_llm(prompt, show_cost=False):
     """Function to send prompt to an LLM via the Together API."""
@@ -37,11 +37,13 @@ def prompt_llm(prompt, show_cost=False):
         print(f"Estimated cost for {model}: ${cost:.10f}\n")
 
     try:
-        response = client.chat.completions.create(
+        # Update this part to use the new API format
+        response = together.Completion.create(
             model=model,
-            messages=[{"role": "user", "content": prompt}],
+            prompt=prompt,
+            max_tokens=1024
         )
-        content = response.choices[0].message.content
+        content = response['choices'][0]['text']
         
         # Safety check for empty responses
         if not content or len(content.strip()) < 10:

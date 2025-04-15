@@ -4,7 +4,7 @@ import speech_recognition as sr
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 import requests
-from together import Together
+import together
 import json
 import re
 from dotenv import load_dotenv
@@ -24,7 +24,7 @@ app.secret_key = os.urandom(24)
 
 # Initialize Together client
 your_api_key = os.getenv("TOGETHER_API_KEY")
-client = Together(api_key=your_api_key)
+TOGETHER_API_KEY = your_api_key
 
 def prompt_llm(prompt, show_cost=False):
     """Function to send prompt to an LLM via the Together API."""
@@ -37,11 +37,27 @@ def prompt_llm(prompt, show_cost=False):
         print(f"Estimated cost for {model}: ${cost:.10f}\n")
 
     try:
-        response = client.chat.completions.create(
+        # First, initialize the Together API with your key
+        together.api_key = TOGETHER_API_KEY
+        
+        # Make the API call
+        response = together.Complete.create(
+            prompt=prompt,
             model=model,
-            messages=[{"role": "user", "content": prompt}],
+            max_tokens=1024,
+            temperature=0.7,
+            top_p=0.7,
+            top_k=50,
+            repetition_penalty=1.0
         )
-        content = response.choices[0].message.content
+        
+        # The new Together API response format is different
+        # Access the text from the first choice in the response
+        if response and hasattr(response, 'output') and response.output:
+            content = response.output.text
+        else:
+            print(f"Warning: Unexpected response format: {response}")
+            return "An error occurred while generating content. Unexpected response format."
         
         # Safety check for empty responses
         if not content or len(content.strip()) < 10:
@@ -436,152 +452,97 @@ def save_to_html(job_desc, company_info, resume, company_values, tech_skills, so
     <html>
     <head>
         <title>Interview Preparation Summary</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <style>
-            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-            
             body {{
-                font-family: 'Inter', sans-serif;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                line-height: 1.6;
+                color: #333;
                 margin: 0;
                 padding: 0;
-                background-color: #f5f5f0;
-                color: #1E3932;
+                background-color: #f5f7fa;
             }}
-            
             .container {{
-                max-width: 850px;
+                max-width: 1000px;
                 margin: 0 auto;
                 padding: 20px;
             }}
-            
             header {{
-                background: linear-gradient(to right, #006241, #1E3932);
+                background-color: #4f46e5;
                 color: white;
-                padding: 30px 0;
+                padding: 30px 20px;
                 margin-bottom: 30px;
             }}
-            
-            .header-content {{
-                text-align: center;
-                padding: 0 20px;
-            }}
-            
-            h1 {{
-                margin: 0;
-                font-size: 28px;
-                font-weight: 700;
-            }}
-            
             .company-info {{
                 margin-top: 10px;
-                font-size: 16px;
+                font-size: 1.1em;
+                color: rgba(255, 255, 255, 0.9);
             }}
-            
-            .timestamp {{
-                margin-top: 5px;
-                font-size: 14px;
-                opacity: 0.8;
+            h1 {{
+                margin: 0;
+                font-size: 2.5em;
             }}
-            
-            .section-title {{
-                color: #006241;
-                font-size: 22px;
-                margin-top: 40px;
-                margin-bottom: 15px;
+            h2 {{
+                color: #4f46e5;
+                border-bottom: 2px solid #4f46e5;
                 padding-bottom: 10px;
-                border-bottom: 2px solid #D4E9E2;
+                margin-top: 30px;
             }}
-            
-            .info-item {{
-                margin-bottom: 12px;
-                line-height: 1.6;
-            }}
-            
-            .info-section {{
-                background-color: white;
-                border-radius: 8px;
-                padding: 20px;
-                margin-bottom: 30px;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-                border: 1px solid #D4E9E2;
-            }}
-            
-            .question {{
-                font-weight: 600;
-                margin-bottom: 10px;
-                color: #006241;
-            }}
-            
-            .answer {{
-                background-color: #f5f5f0;
-                border-left: 4px solid #006241;
-                padding: 15px;
-                margin-bottom: 20px;
-                border-radius: 0 8px 8px 0;
-            }}
-            
-            .feedback {{
-                background-color: #f5f5f0;
-                border: 1px solid #D4E9E2;
-                padding: 15px;
-                margin-top: 20px;
-                border-radius: 8px;
-            }}
-            
-            .score-section {{
-                display: flex;
-                justify-content: space-between;
-                margin: 20px 0;
-                flex-wrap: wrap;
-            }}
-            
-            .score-item {{
-                flex: 1;
-                min-width: 150px;
+            .section {{
                 background: white;
-                padding: 15px;
+                padding: 25px;
+                margin-bottom: 25px;
                 border-radius: 8px;
-                margin-right: 15px;
-                margin-bottom: 15px;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-                border: 1px solid #D4E9E2;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             }}
-            
-            .score-item:last-child {{
-                margin-right: 0;
+            .section-title {{
+                margin-top: 0;
+                color: #4f46e5;
             }}
-            
-            .score-title {{
-                font-weight: 600;
-                margin-bottom: 8px;
-                color: #006241;
+            .info-item {{
+                margin-bottom: 10px;
+                list-style-type: none;
             }}
-            
-            .stars {{
-                color: #006241;
-                font-size: 18px;
-            }}
-            
-            footer {{
-                text-align: center;
-                margin-top: 50px;
-                padding: 20px 0;
-                color: #666;
-                font-size: 14px;
-                border-top: 1px solid #D4E9E2;
-            }}
-            
             ul {{
                 padding-left: 20px;
             }}
-            
-            li {{
-                margin-bottom: 8px;
+            .feedback {{
+                background-color: #f0f9ff;
+                border-left: 4px solid #38bdf8;
+                padding: 15px;
+                margin: 15px 0;
+            }}
+            .model-answer {{
+                background-color: #f0fdf4;
+                border-left: 4px solid #4ade80;
+                padding: 15px;
+                margin: 15px 0;
+            }}
+            .question {{
+                font-weight: bold;
+                font-size: 1.2em;
+                margin-bottom: 10px;
+                color: #1e293b;
+            }}
+            .user-answer {{
+                background-color: #fef2f2;
+                border-left: 4px solid #f87171;
+                padding: 15px;
+                margin: 15px 0;
+            }}
+            footer {{
+                text-align: center;
+                padding: 20px;
+                color: #64748b;
+                font-size: 0.9em;
+                margin-top: 40px;
             }}
         </style>
     </head>
     <body>
         <header>
-            <div class="header-content">
+            <div class="container">
                 <h1>Interview Preparation Summary</h1>
                 <div class="company-info">
                     <strong>Company:</strong> {company_values.split(':')[0] if ':' in company_values else 'Not specified'} |
@@ -591,63 +552,55 @@ def save_to_html(job_desc, company_info, resume, company_values, tech_skills, so
             </div>
         </header>
         <div class="container">
-            <!-- Parsed Information -->
-            <div class="info-section">
-                <h2 class="section-title">Job Analysis</h2>
-                <ul>
-                    <li class="info-item"><strong>Company Values:</strong> {company_values}</li>
-                    <li class="info-item"><strong>Tech Skills:</strong> {tech_skills}</li>
-                    <li class="info-item"><strong>Soft Skills:</strong> {soft_skills}</li>
-                    <li class="info-item"><strong>Job Duties:</strong> {job_duties}</li>
-                </ul>
-            </div>
-            
-            <!-- Question and Answer -->
-            <div class="info-section">
-                <h2 class="section-title">Interview Question</h2>
-                <div class="question">
-                    {selected_question}
-                </div>
-                
-                <h3 style="margin-top: 25px; color: #006241;">Your Answer</h3>
-                <div class="answer">
-                    {answer_text}
-                </div>
-                
-                <h3 style="margin-top: 25px; color: #006241;">Model Answer</h3>
-                <div class="answer">
-                    {model_answer}
-                </div>
-            </div>
-            
-            <!-- Feedback -->
-            <div class="info-section">
-                <h2 class="section-title">Performance Analysis</h2>
-                <div class="score-section">
-                    <div class="score-item">
-                        <div class="score-title">Clarity</div>
-                        <div class="stars">{"★" * int(feedback.split('Clarity:')[1].split('/')[0].strip() if 'Clarity:' in feedback else 5) + "☆" * (10 - int(feedback.split('Clarity:')[1].split('/')[0].strip() if 'Clarity:' in feedback else 5))}</div>
-                    </div>
-                    <div class="score-item">
-                        <div class="score-title">Relevance</div>
-                        <div class="stars">{"★" * int(feedback.split('Relevance:')[1].split('/')[0].strip() if 'Relevance:' in feedback else 5) + "☆" * (10 - int(feedback.split('Relevance:')[1].split('/')[0].strip() if 'Relevance:' in feedback else 5))}</div>
-                    </div>
-                    <div class="score-item">
-                        <div class="score-title">Confidence</div>
-                        <div class="stars">{"★" * int(feedback.split('Confidence:')[1].split('/')[0].strip() if 'Confidence:' in feedback else 5) + "☆" * (10 - int(feedback.split('Confidence:')[1].split('/')[0].strip() if 'Confidence:' in feedback else 5))}</div>
-                    </div>
-                </div>
-                
-                <div class="feedback">
-                    <h3 style="margin-top: 0; margin-bottom: 15px; color: #006241;">Detailed Feedback</h3>
-                    {feedback}
-                </div>
-            </div>
-            
-            <footer>
-                <p>Husky Interview Prep &copy; 2025</p>
-                <p>Generated on {datetime.now().strftime("%B %d, %Y at %I:%M %p")}</p>
-            </footer>
+        <div class="section">
+            <h2 class="section-title">Parsed Information</h2>
+            <ul>
+                <li class="info-item"><strong>Company Values:</strong> {company_values}</li>
+                <li class="info-item"><strong>Tech Skills:</strong> {tech_skills}</li>
+                <li class="info-item"><strong>Soft Skills:</strong> {soft_skills}</li>
+                <li class="info-item"><strong>Job Duties:</strong> {job_duties}</li>
+            </ul>
+        </div>
+        
+        <div class="section">
+            <h2 class="section-title">Job Description</h2>
+            <div class="content">{job_desc}</div>
+        </div>
+        
+        <div class="section">
+            <h2 class="section-title">Company Information</h2>
+            <div class="content">{company_info}</div>
+        </div>
+        
+        <div class="section">
+            <h2 class="section-title">Your Resume</h2>
+            <div class="content">{resume}</div>
+        </div>
+        
+        <div class="section">
+            <h2 class="section-title">Interview Question</h2>
+            <div class="question">{selected_question}</div>
+        </div>
+        
+        <div class="section">
+            <h2 class="section-title">Your Answer</h2>
+            <div class="user-answer">{answer_text}</div>
+        </div>
+        
+        <div class="section">
+            <h2 class="section-title">Feedback</h2>
+            <div class="feedback">{feedback}</div>
+        </div>
+        
+        <div class="section">
+            <h2 class="section-title">Model Answer</h2>
+            <div class="model-answer">{model_answer}</div>
+        </div>
+        
+        <footer>
+            <p>Husky Interview Prep &copy; 2025</p>
+            <p>Generated on {datetime.now().strftime("%B %d, %Y at %I:%M %p")}</p>
+        </footer>
         </div>
     </body>
     </html>
@@ -906,11 +859,11 @@ if __name__ == "__main__":
         
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f5f5f0;
+            background-color: #f3f4f6;
         }
         
         .gradient-bg {
-            background: linear-gradient(to right, #006241, #1E3932);
+            background: linear-gradient(to right, #4f46e5, #8b5cf6);
         }
         
         .container {
@@ -924,13 +877,13 @@ if __name__ == "__main__":
             filter: blur(80px);
             z-index: 0;
             animation: float 6s ease-in-out infinite;
-            opacity: 0.2;
+            opacity: 0.5;
         }
         
         .orb-1 {
             width: 300px;
             height: 300px;
-            background: #006241;
+            background: #4f46e5;
             top: -150px;
             right: -100px;
             animation-delay: 0s;
@@ -939,7 +892,7 @@ if __name__ == "__main__":
         .orb-2 {
             width: 250px;
             height: 250px;
-            background: #1E3932;
+            background: #8b5cf6;
             bottom: -100px;
             left: -50px;
             animation-delay: 3s;
@@ -951,41 +904,39 @@ if __name__ == "__main__":
         }
         
         .tab-active {
-            background-color: #006241;
+            background-color: #4f46e5;
             color: white;
         }
         
         .question-card {
             transition: all 0.3s ease;
-            border: 1px solid #E5E5E0;
         }
         
         .question-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
-            border-color: #D4E9E2;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
         
         .btn-primary {
-            background-color: #006241;
+            background-color: #4f46e5;
             color: white;
             transition: all 0.3s ease;
         }
         
         .btn-primary:hover {
-            background-color: #1E3932;
+            background-color: #4338ca;
             transform: translateY(-1px);
         }
         
         .btn-secondary {
-            background-color: #f5f5f0;
-            color: #1E3932;
-            border: 1px solid #D4E9E2;
+            background-color: #f3f4f6;
+            color: #1f2937;
+            border: 1px solid #d1d5db;
             transition: all 0.3s ease;
         }
         
         .btn-secondary:hover {
-            background-color: #E5E5E0;
+            background-color: #e5e7eb;
             transform: translateY(-1px);
         }
         
@@ -1003,7 +954,7 @@ if __name__ == "__main__":
             width: 100%;
             height: 100%;
             border-radius: 50%;
-            background-color: rgba(0, 98, 65, 0.3);
+            background-color: rgba(239, 68, 68, 0.7);
             animation: pulse 2s infinite;
         }
         
@@ -1023,12 +974,18 @@ if __name__ == "__main__":
             transform: translateY(0);
         }
         
-        /* Star colors using Starbucks-inspired palette */
-        .star-1, .star-2, .star-3, .star-4, .star-5, 
-        .star-6, .star-7, .star-8, .star-9, .star-10 { 
-            color: #006241; 
-        }
-        .star-empty { color: #D4E9E2; }
+        /* Add these to the existing style section in the head */
+        .star-1 { color: #FF5252; } /* Red */
+        .star-2 { color: #FF7F00; } /* Orange */
+        .star-3 { color: #FFFF00; } /* Yellow */
+        .star-4 { color: #7FFF00; } /* Chartreuse */
+        .star-5 { color: #00FF00; } /* Green */
+        .star-6 { color: #00FFFF; } /* Cyan */
+        .star-7 { color: #007FFF; } /* Azure */
+        .star-8 { color: #0000FF; } /* Blue */
+        .star-9 { color: #7F00FF; } /* Violet */
+        .star-10 { color: #FF00FF; } /* Magenta */
+        .star-empty { color: #cccccc; } /* Gray for empty stars */
     </style>
 </head>
 <body>
@@ -1040,7 +997,7 @@ if __name__ == "__main__":
             <div class="container relative z-10">
                 <div class="text-center">
                     <div class="inline-block px-4 py-2 rounded-full bg-white/10 backdrop-blur-lg border border-white/20 mb-6">
-                        <span class="inline-block w-2 h-2 rounded-full bg-white mr-2"></span>
+                        <span class="inline-block w-2 h-2 rounded-full bg-green-400 mr-2"></span>
                         <span class="text-white text-sm font-medium">AI-Powered Interview Prep</span>
                     </div>
                     <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">Husky Interview Prep</h1>
@@ -1054,21 +1011,21 @@ if __name__ == "__main__":
             <!-- Step 1: Enter Information -->
             <section class="bg-white rounded-xl shadow-md p-6 mb-8">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-50 text-green-800 mr-3">1</span>
+                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 mr-3">1</span>
                     Enter Your Information
                 </h2>
                 <div class="flex flex-col gap-4 max-w-3xl mx-auto">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Job Description</label>
-                        <textarea x-model="jobDesc" class="w-full h-32 px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-700 focus:border-green-700" placeholder="Paste the job description here..."></textarea>
+                        <textarea x-model="jobDesc" class="w-full h-32 px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="Paste the job description here..."></textarea>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Company Information</label>
-                        <textarea x-model="companyInfo" class="w-full h-32 px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-700 focus:border-green-700" placeholder="Enter information about the company..."></textarea>
+                        <textarea x-model="companyInfo" class="w-full h-32 px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="Enter information about the company..."></textarea>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Your Resume</label>
-                        <textarea x-model="resume" class="w-full h-32 px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-700 focus:border-green-700" placeholder="Paste your resume or relevant experience here..."></textarea>
+                        <textarea x-model="resume" class="w-full h-32 px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="Paste your resume or relevant experience here..."></textarea>
                     </div>
                 </div>
                 
@@ -1084,11 +1041,11 @@ if __name__ == "__main__":
                     <div class="mt-8">
                         <!-- Add new section for company name and position title -->
                         <div class="grid md:grid-cols-2 gap-6 mb-8">
-                            <div class="bg-green-50 p-4 rounded-lg border border-green-100">
+                            <div class="bg-gray-50 p-4 rounded-lg">
                                 <h3 class="font-semibold text-gray-800 mb-2">Company Name</h3>
                                 <p class="text-gray-700" x-text="parsedInfo.company_name"></p>
                             </div>
-                            <div class="bg-green-50 p-4 rounded-lg border border-green-100">
+                            <div class="bg-gray-50 p-4 rounded-lg">
                                 <h3 class="font-semibold text-gray-800 mb-2">Position Title</h3>
                                 <p class="text-gray-700" x-text="parsedInfo.position_title"></p>
                             </div>
@@ -1096,7 +1053,7 @@ if __name__ == "__main__":
                         
                         <!-- Existing grid for other information -->
                         <div class="grid md:grid-cols-2 gap-6 mb-8">
-                            <div class="bg-green-50 p-4 rounded-lg border border-green-100">
+                            <div class="bg-gray-50 p-4 rounded-lg">
                                 <h3 class="font-semibold text-gray-800 mb-2">Company Values</h3>
                                 <ul class="list-disc pl-5 space-y-1 text-gray-700">
                                     <template x-for="(line, index) in parsedInfo.company_values.split('- ').filter(item => item.trim().length > 0)" :key="index">
@@ -1104,7 +1061,7 @@ if __name__ == "__main__":
                                     </template>
                                 </ul>
                             </div>
-                            <div class="bg-green-50 p-4 rounded-lg border border-green-100">
+                            <div class="bg-gray-50 p-4 rounded-lg">
                                 <h3 class="font-semibold text-gray-800 mb-2">Job Duties</h3>
                                 <ul class="list-disc pl-5 space-y-1 text-gray-700">
                                     <template x-for="(line, index) in parsedInfo.job_duties.split('- ').filter(item => item.trim().length > 0)" :key="index">
@@ -1112,7 +1069,7 @@ if __name__ == "__main__":
                                     </template>
                                 </ul>
                             </div>
-                            <div class="bg-green-50 p-4 rounded-lg border border-green-100">
+                            <div class="bg-gray-50 p-4 rounded-lg">
                                 <h3 class="font-semibold text-gray-800 mb-2">Tech Skills</h3>
                                 <ul class="list-disc pl-5 space-y-1 text-gray-700">
                                     <template x-for="(line, index) in parsedInfo.tech_skills.split('- ').filter(item => item.trim().length > 0)" :key="index">
@@ -1120,7 +1077,7 @@ if __name__ == "__main__":
                                     </template>
                                 </ul>
                             </div>
-                            <div class="bg-green-50 p-4 rounded-lg border border-green-100">
+                            <div class="bg-gray-50 p-4 rounded-lg">
                                 <h3 class="font-semibold text-gray-800 mb-2">Soft Skills</h3>
                                 <ul class="list-disc pl-5 space-y-1 text-gray-700">
                                     <template x-for="(line, index) in parsedInfo.soft_skills.split('- ').filter(item => item.trim().length > 0)" :key="index">
@@ -1144,7 +1101,7 @@ if __name__ == "__main__":
             <!-- Step 2: Practice Questions -->
             <section x-show="questionsGenerated" class="bg-white rounded-xl shadow-md p-6 mb-8">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-50 text-green-800 mr-3">2</span>
+                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 mr-3">2</span>
                     Practice Questions
                 </h2>
                 
@@ -1183,20 +1140,20 @@ if __name__ == "__main__":
             <!-- Step 3: Record Answer -->
             <section x-show="selectedQuestion" class="bg-white rounded-xl shadow-md p-6 mb-8">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-50 text-green-800 mr-3">3</span>
+                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 mr-3">3</span>
                     Record Your Answer
                 </h2>
                 
                 <!-- New company and position box with better alignment -->
-                <div class="bg-green-50 p-4 rounded-lg border border-green-100 mb-6">
+                <div class="bg-indigo-50 p-4 rounded-lg border border-indigo-100 mb-6">
                     <div class="flex flex-row items-center justify-start">
                         <div class="flex items-center mr-8">
                             <span class="text-sm font-medium text-gray-600">Company:</span>
-                            <span class="ml-2 font-semibold text-green-800" x-text="parsedInfo.company_name || 'Not specified'"></span>
+                            <span class="ml-2 font-semibold text-indigo-700" x-text="parsedInfo.company_name || 'Not specified'"></span>
                         </div>
                         <div class="flex items-center">
                             <span class="text-sm font-medium text-gray-600">Position:</span>
-                            <span class="ml-2 font-semibold text-green-800" x-text="parsedInfo.position_title || 'Not specified'"></span>
+                            <span class="ml-2 font-semibold text-indigo-700" x-text="parsedInfo.position_title || 'Not specified'"></span>
                         </div>
                     </div>
                 </div>
@@ -1206,14 +1163,14 @@ if __name__ == "__main__":
                     <!-- Interviewer Column (35% width) -->
                     <div class="md:col-span-4">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Interviewer</label>
-                        <div class="text-center p-4 bg-green-50 rounded-lg border border-green-100 h-full">
+                        <div class="text-center p-4 bg-gray-50 rounded-lg border border-gray-200 h-full">
                             <div class="rounded-lg overflow-hidden mb-4 mx-auto w-32 h-32 flex items-center justify-center bg-gray-100">
                                 <img src="/static/interviewer.png" alt="Interviewer" class="max-w-full max-h-full">
                             </div>
                             
                             <div class="mb-4">
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Voice Accent</label>
-                                <select x-model="voiceOption" class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-700 focus:border-green-700">
+                                <select x-model="voiceOption" class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
                                     <option value="US English">US English</option>
                                     <option value="UK English">UK English</option>
                                     <option value="Australian English">Australian English</option>
@@ -1241,11 +1198,11 @@ if __name__ == "__main__":
                     <!-- Question Column (65% width) -->
                     <div class="md:col-span-8">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Current Question</label>
-                        <div class="p-4 bg-green-50 rounded-lg border border-green-100">
+                        <div class="p-4 bg-indigo-50 rounded-lg border border-indigo-100">
                             <p class="text-gray-800 font-medium" x-text="selectedQuestion"></p>
                         </div>
                         
-                        <div class="mt-4 p-4 bg-green-50 rounded-lg border border-green-100">
+                        <div class="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
                             <h3 class="font-medium text-gray-800 mb-2">How to Answer</h3>
                             <p class="text-gray-700" x-text="questionHints[selectedQuestion] || 'No specific hint available for this question.'"></p>
                         </div>
@@ -1257,7 +1214,7 @@ if __name__ == "__main__":
                     <!-- Recording Button Column (35% width) -->
                     <div class="md:col-span-4">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Record Your Answer</label>
-                        <div class="flex flex-col items-center justify-center h-full p-4 bg-green-50 rounded-lg border border-green-100">
+                        <div class="flex flex-col items-center justify-center h-full p-4 bg-gray-50 rounded-lg border border-gray-200">
                             <button @click="toggleRecording()" class="mb-4 relative">
                                 <div :class="{'recording-pulse': isRecording}" class="w-16 h-16 rounded-full bg-white border-2 border-gray-300 flex items-center justify-center">
                                     <i :class="isRecording ? 'fa-stop text-red-500' : 'fa-microphone text-gray-700'" class="fas text-2xl"></i>
@@ -1290,12 +1247,12 @@ if __name__ == "__main__":
             <!-- Step 4: Review Analysis -->
             <section x-show="feedbackText" class="bg-white rounded-xl shadow-md p-6 mb-8">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-50 text-green-800 mr-3">4</span>
+                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 mr-3">4</span>
                     Review Analysis
                 </h2>
                 
                 <div x-show="scores" class="grid md:grid-cols-3 gap-4 mb-6">
-                    <div class="bg-green-50 p-4 rounded-lg border border-green-100">
+                    <div class="bg-gray-50 p-4 rounded-lg">
                         <h3 class="font-semibold text-gray-800 mb-2">Clarity</h3>
                         <div class="text-2xl">
                             <template x-for="i in 10" :key="i">
@@ -1305,7 +1262,7 @@ if __name__ == "__main__":
                         </div>
                         <p class="text-sm text-gray-600 mt-1">Score: <span x-text="scores.clarity"></span>/10</p>
                     </div>
-                    <div class="bg-green-50 p-4 rounded-lg border border-green-100">
+                    <div class="bg-gray-50 p-4 rounded-lg">
                         <h3 class="font-semibold text-gray-800 mb-2">Relevance</h3>
                         <div class="text-2xl">
                             <template x-for="i in 10" :key="i">
@@ -1315,7 +1272,7 @@ if __name__ == "__main__":
                         </div>
                         <p class="text-sm text-gray-600 mt-1">Score: <span x-text="scores.relevance"></span>/10</p>
                     </div>
-                    <div class="bg-green-50 p-4 rounded-lg border border-green-100">
+                    <div class="bg-gray-50 p-4 rounded-lg">
                         <h3 class="font-semibold text-gray-800 mb-2">Confidence</h3>
                         <div class="text-2xl">
                             <template x-for="i in 10" :key="i">
@@ -1327,7 +1284,7 @@ if __name__ == "__main__":
                     </div>
                 </div>
                 
-                <div class="bg-green-50 p-6 rounded-lg border border-green-100">
+                <div class="bg-gray-50 p-6 rounded-lg">
                     <h3 class="font-semibold text-gray-800 mb-3">Detailed Feedback</h3>
                     <div class="prose max-w-none text-gray-700 whitespace-pre-line leading-relaxed" 
                          x-text="feedbackText"></div>
@@ -1337,7 +1294,7 @@ if __name__ == "__main__":
             <!-- Step 5: Model Answer -->
             <section x-show="feedbackText" class="bg-white rounded-xl shadow-md p-6 mb-8">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-50 text-green-800 mr-3">5</span>
+                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 mr-3">5</span>
                     Get Model Answer
                 </h2>
                 
@@ -1348,7 +1305,7 @@ if __name__ == "__main__":
                 </button>
                 
                 <template x-if="modelAnswer">
-                    <div class="bg-green-50 p-6 rounded-lg border border-green-100">
+                    <div class="bg-gray-50 p-6 rounded-lg">
                         <h3 class="font-semibold text-gray-800 mb-3">Sample Professional Answer</h3>
                         <div class="prose max-w-none text-gray-700 whitespace-pre-line leading-relaxed" 
                              x-text="modelAnswer"></div>
@@ -1359,7 +1316,7 @@ if __name__ == "__main__":
             <!-- Step 6: Save Work -->
             <section x-show="feedbackText && modelAnswer" class="bg-white rounded-xl shadow-md p-6 mb-8">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-50 text-green-800 mr-3">6</span>
+                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 mr-3">6</span>
                     Save Your Work
                 </h2>
                 
@@ -1370,7 +1327,7 @@ if __name__ == "__main__":
                 </button>
                 
                 <template x-if="downloadLink">
-                    <div class="mt-6 p-4 bg-green-50 border border-green-100 rounded-lg">
+                    <div class="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
                         <p class="text-green-800 mb-3">Your file is ready to download!</p>
                         <a :href="downloadLink" class="btn-primary px-6 py-3 rounded-lg font-medium inline-flex items-center" download>
                             <i class="fas fa-cloud-download-alt mr-2"></i> Download File
@@ -1382,12 +1339,12 @@ if __name__ == "__main__":
             <!-- Step 7: Continue or Start New -->
             <section x-show="feedbackText && modelAnswer" class="bg-white rounded-xl shadow-md p-6 mb-8">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-50 text-green-800 mr-3">7</span>
+                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 mr-3">7</span>
                     Continue Your Practice
                 </h2>
                 
                 <div class="grid md:grid-cols-2 gap-6">
-                    <div class="bg-green-50 p-6 rounded-lg border border-green-100 text-center">
+                    <div class="bg-gray-50 p-6 rounded-lg text-center">
                         <h3 class="font-semibold text-gray-800 mb-4">Practice Another Question</h3>
                         <p class="text-gray-600 mb-4">Continue practicing with the same job information and try another interview question.</p>
                         <button @click="practiceAnotherQuestion()" class="btn-primary px-6 py-3 rounded-lg font-medium">
@@ -1395,7 +1352,7 @@ if __name__ == "__main__":
                         </button>
                     </div>
                     
-                    <div class="bg-green-50 p-6 rounded-lg border border-green-100 text-center">
+                    <div class="bg-gray-50 p-6 rounded-lg text-center">
                         <h3 class="font-semibold text-gray-800 mb-4">Start Fresh</h3>
                         <p class="text-gray-600 mb-4">Clear all data and start over with a different company or position.</p>
                         <button @click="startOver()" class="btn-secondary px-6 py-3 rounded-lg font-medium">
@@ -1407,10 +1364,10 @@ if __name__ == "__main__":
         </main>
         
         <!-- Footer -->
-        <footer class="bg-green-900 py-8 px-4 text-center">
+        <footer class="bg-gray-800 py-8 px-4 text-center">
             <div class="container">
-                <p class="text-green-100">Husky Interview Prep © 2025. All rights reserved.</p>
-                <p class="text-green-200 text-sm mt-2">Powered by Cathy and AI and created to help you succeed.</p>
+                <p class="text-gray-300">Husky Interview Prep © 2025. All rights reserved.</p>
+                <p class="text-gray-400 text-sm mt-2">Powered by Cathy and AI and created to help you succeed.</p>
             </div>
         </footer>
     </div>

@@ -968,16 +968,17 @@ if __name__ == "__main__":
         import shutil
         shutil.copy('interviewer.png', 'static/interviewer.png')
     
-    # Create HTML template file
-    with open('templates/index.html', 'w') as f:
-        f.write('''
+    # Create basic index.html template if it doesn't exist
+    if not os.path.exists('templates/index.html'):
+        with open('templates/index.html', 'w') as f:
+            f.write('''
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Husky Interview Prep</title>
-    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -986,140 +987,179 @@ if __name__ == "__main__":
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         
+        :root {
+            --primary-color: #006241;    /* Starbucks green */
+            --primary-light: #D4E9E2;    /* Light green */
+            --primary-dark: #004C33;     /* Dark green */
+            --accent-color: #CBA258;     /* Gold accent */
+            --text-dark: #1E3932;        /* Dark green text */
+            --text-light: #f9f9f9;       /* Light text */
+            --spacing-base: 4px;         /* Base spacing unit */
+            --transition-base: 0.2s ease-in-out;
+        }
+        
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f5f5f0;
+            color: var(--text-dark);
+            line-height: 1.5;
+            font-size: 16px;
+            background-color: #f8f9fa;
         }
         
-        .gradient-bg {
-            background: linear-gradient(to right, #006241, #1E3932);
-        }
+        /* Enhanced Backgrounds */
+        .bg-primary { background-color: var(--primary-color); }
+        .bg-primary-light { background-color: var(--primary-light); }
+        .bg-primary-dark { background-color: var(--primary-dark); }
         
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        
-        .orb {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(80px);
-            z-index: 0;
-            animation: float 6s ease-in-out infinite;
-            opacity: 0.2;
-        }
-        
-        .orb-1 {
-            width: 300px;
-            height: 300px;
-            background: #006241;
-            top: -150px;
-            right: -100px;
-            animation-delay: 0s;
-        }
-        
-        .orb-2 {
-            width: 250px;
-            height: 250px;
-            background: #1E3932;
-            bottom: -100px;
-            left: -50px;
-            animation-delay: 3s;
-        }
-        
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-20px); }
-        }
-        
-        .tab-active {
-            background-color: #006241;
+        /* Improved Buttons */
+        .btn-primary {
+            background-color: var(--primary-color);
             color: white;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all var(--transition-base);
+            border: none;
+            outline: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         
+        .btn-primary:hover, .btn-primary:focus {
+            background-color: var(--primary-dark);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transform: translateY(-1px);
+        }
+        
+        .btn-primary:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-secondary {
+            background-color: white;
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all var(--transition-base);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn-secondary:hover, .btn-secondary:focus {
+            background-color: var(--primary-light);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        /* Card Improvements */
+        .card {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transition: all var(--transition-base);
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+        
+        .card-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .card-body {
+            padding: 24px;
+        }
+        
+        /* Form Elements */
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            transition: all var(--transition-base);
+            font-size: 16px;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 98, 65, 0.1);
+            outline: none;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+        
+        /* Status indicators */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .recording-pulse {
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(220, 38, 38, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+        }
+        
+        /* Visual Tab System */
+        .tab-active {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            font-weight: 600;
+        }
+        
+        /* Question Cards */
         .question-card {
-            transition: all 0.3s ease;
-            border: 1px solid #E5E5E0;
+            transition: all var(--transition-base);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border: 1px solid #eaeaea;
+            background-color: #f9f9f9;
+            cursor: pointer;
         }
         
         .question-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
-            border-color: #D4E9E2;
+            box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.05);
+            border-color: var(--primary-light);
         }
-        
-        .btn-primary {
-            background-color: #006241;
-            color: white;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-primary:hover {
-            background-color: #1E3932;
-            transform: translateY(-1px);
-        }
-        
-        .btn-secondary {
-            background-color: #f5f5f0;
-            color: #1E3932;
-            border: 1px solid #D4E9E2;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-secondary:hover {
-            background-color: #E5E5E0;
-            transform: translateY(-1px);
-        }
-        
-        .star-rating {
-            display: inline-block;
-        }
-        
-        .recording-pulse {
-            position: relative;
-        }
-        
-        .recording-pulse::before {
-            content: '';
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            background-color: rgba(0, 98, 65, 0.3);
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { transform: scale(1); opacity: 1; }
-            100% { transform: scale(1.5); opacity: 0; }
-        }
-        
-        .section-enter {
-            transition: all 0.5s ease;
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        
-        .section-enter-active {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        
-        /* Star colors using Starbucks-inspired palette */
-        .star-1, .star-2, .star-3, .star-4, .star-5, 
-        .star-6, .star-7, .star-8, .star-9, .star-10 { 
-            color: #006241; 
-        }
-        .star-empty { color: #D4E9E2; }
     </style>
 </head>
-<body>
-    <div class="min-h-screen" x-data="app()">
-        <!-- Header -->
-        <header class="gradient-bg py-12 px-4 relative overflow-hidden">
-            <div class="orb orb-1"></div>
-            <div class="orb orb-2"></div>
-            <div class="container relative z-10">
+<body class="text-gray-800">
+    <div x-data="app()" x-init="init" class="min-h-screen flex flex-col">
+        <!-- Hero Header -->
+        <header class="bg-primary relative py-16 overflow-hidden">
+            <div class="absolute inset-0 z-0">
+                <div class="absolute inset-0 bg-gradient-to-r from-primary-dark to-primary opacity-90"></div>
+            </div>
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                 <div class="text-center">
                     <div class="inline-block px-4 py-2 rounded-full bg-white/10 backdrop-blur-lg border border-white/20 mb-6">
                         <span class="inline-block w-2 h-2 rounded-full bg-white mr-2"></span>
@@ -1131,397 +1171,488 @@ if __name__ == "__main__":
             </div>
         </header>
         
-        <!-- Main Content -->
-        <main class="container px-4 py-8">
-            <!-- Step 1: Enter Information -->
-            <section class="bg-white rounded-xl shadow-md p-6 mb-8">
-                <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-50 text-green-800 mr-3">1</span>
-                    Enter Your Information
-                </h2>
-                <div class="flex flex-col gap-4 max-w-3xl mx-auto">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Job Description</label>
-                        <textarea x-model="jobDesc" class="w-full h-32 px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-700 focus:border-green-700" placeholder="Paste the job description here..."></textarea>
+        <main class="flex-grow py-12 px-4 sm:px-6 lg:px-8">
+            <div class="container mx-auto max-w-5xl">
+                <!-- Step 1: Enter Information -->
+                <section class="card">
+                    <div class="card-header">
+                        <h2 class="text-2xl font-bold flex items-center">
+                            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary-light text-primary mr-3">1</span>
+                            Enter Your Information
+                        </h2>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Company Information</label>
-                        <textarea x-model="companyInfo" class="w-full h-32 px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-700 focus:border-green-700" placeholder="Enter information about the company..."></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Your Resume</label>
-                        <textarea x-model="resume" class="w-full h-32 px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-700 focus:border-green-700" placeholder="Paste your resume or relevant experience here..."></textarea>
-                    </div>
-                </div>
-                
-                <div class="mt-6 flex justify-center">
-                    <button @click="analyzeInfo()" :disabled="isAnalyzing" class="btn-primary px-6 py-3 rounded-lg font-medium flex items-center">
-                        <span class="spinner" x-show="isAnalyzing"></span>
-                        <i class="fas fa-search mr-2" x-show="!isAnalyzing"></i>
-                        <span x-text="isAnalyzing ? 'Analyzing...' : 'Analyze Information'"></span>
-                    </button>
-                </div>
-                
-                <template x-if="parsedInfo.company_values">
-                    <div class="mt-8">
-                        <!-- Add new section for company name and position title -->
-                        <div class="grid md:grid-cols-2 gap-6 mb-8">
-                            <div class="bg-green-50 p-4 rounded-lg border border-green-100">
-                                <h3 class="font-semibold text-gray-800 mb-2">Company Name</h3>
-                                <p class="text-gray-700" x-text="parsedInfo.company_name"></p>
+                    <div class="card-body">
+                        <div class="grid grid-cols-1 gap-6">
+                            <div>
+                                <label class="form-label">Job Description</label>
+                                <textarea 
+                                    x-model="jobDesc" 
+                                    class="form-control h-32" 
+                                    placeholder="Paste the job description here..."
+                                ></textarea>
                             </div>
-                            <div class="bg-green-50 p-4 rounded-lg border border-green-100">
-                                <h3 class="font-semibold text-gray-800 mb-2">Position Title</h3>
-                                <p class="text-gray-700" x-text="parsedInfo.position_title"></p>
+                            <div>
+                                <label class="form-label">Company Information</label>
+                                <textarea 
+                                    x-model="companyInfo" 
+                                    class="form-control h-32" 
+                                    placeholder="Enter information about the company..."
+                                ></textarea>
+                            </div>
+                            <div>
+                                <label class="form-label">Your Resume</label>
+                                <textarea 
+                                    x-model="resume" 
+                                    class="form-control h-32" 
+                                    placeholder="Paste your resume or relevant experience here..."
+                                ></textarea>
                             </div>
                         </div>
                         
-                        <!-- Existing grid for other information -->
-                        <div class="grid md:grid-cols-2 gap-6 mb-8">
-                            <div class="bg-green-50 p-4 rounded-lg border border-green-100">
-                                <h3 class="font-semibold text-gray-800 mb-2">Company Values</h3>
-                                <ul class="list-disc pl-5 space-y-1 text-gray-700">
-                                    <template x-for="(line, index) in parsedInfo.company_values.split('- ').filter(item => item.trim().length > 0)" :key="index">
-                                        <li x-text="line.trim()"></li>
-                                    </template>
-                                </ul>
-                            </div>
-                            <div class="bg-green-50 p-4 rounded-lg border border-green-100">
-                                <h3 class="font-semibold text-gray-800 mb-2">Job Duties</h3>
-                                <ul class="list-disc pl-5 space-y-1 text-gray-700">
-                                    <template x-for="(line, index) in parsedInfo.job_duties.split('- ').filter(item => item.trim().length > 0)" :key="index">
-                                        <li x-text="line.trim()"></li>
-                                    </template>
-                                </ul>
-                            </div>
-                            <div class="bg-green-50 p-4 rounded-lg border border-green-100">
-                                <h3 class="font-semibold text-gray-800 mb-2">Tech Skills</h3>
-                                <ul class="list-disc pl-5 space-y-1 text-gray-700">
-                                    <template x-for="(line, index) in parsedInfo.tech_skills.split('- ').filter(item => item.trim().length > 0)" :key="index">
-                                        <li x-text="line.trim()"></li>
-                                    </template>
-                                </ul>
-                            </div>
-                            <div class="bg-green-50 p-4 rounded-lg border border-green-100">
-                                <h3 class="font-semibold text-gray-800 mb-2">Soft Skills</h3>
-                                <ul class="list-disc pl-5 space-y-1 text-gray-700">
-                                    <template x-for="(line, index) in parsedInfo.soft_skills.split('- ').filter(item => item.trim().length > 0)" :key="index">
-                                        <li x-text="line.trim()"></li>
-                                    </template>
-                                </ul>
-                            </div>
-                        </div>
-                        
-                        <div class="flex justify-center">
-                            <button @click="generateQuestions()" :disabled="isGeneratingQuestions" class="btn-primary px-6 py-3 rounded-lg font-medium flex items-center">
-                                <span class="spinner" x-show="isGeneratingQuestions"></span>
-                                <i class="fas fa-list-ul mr-2" x-show="!isGeneratingQuestions"></i>
-                                <span x-text="isGeneratingQuestions ? 'Generating...' : 'Generate Interview Questions'"></span>
+                        <div class="mt-8 flex justify-center">
+                            <button 
+                                @click="analyzeInfo()" 
+                                :disabled="isAnalyzing" 
+                                class="btn-primary"
+                            >
+                                <span class="spinner" x-show="isAnalyzing"></span>
+                                <i class="fas fa-search mr-2" x-show="!isAnalyzing"></i>
+                                <span x-text="isAnalyzing ? 'Analyzing...' : 'Analyze Information'"></span>
                             </button>
                         </div>
-                    </div>
-                </template>
-            </section>
-            
-            <!-- Step 2: Practice Questions -->
-            <section x-show="questionsGenerated" class="bg-white rounded-xl shadow-md p-6 mb-8">
-                <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-50 text-green-800 mr-3">2</span>
-                    Practice Questions
-                </h2>
                 
-                <!-- Question Category Tabs -->
-                <div class="mb-6">
-                    <div class="flex flex-wrap space-x-2 border-b border-gray-200">
-                        <template x-for="(category, index) in Object.keys(questions)" :key="index">
-                            <button 
-                                @click="activeCategory = category" 
-                                :class="{'tab-active': activeCategory === category}"
-                                class="px-4 py-2 rounded-t-lg font-medium transition-all duration-200"
-                                x-text="category"
-                            ></button>
+                        <template x-if="parsedInfo.company_values">
+                            <div class="mt-8 space-y-6">
+                                <!-- Company and position info -->
+                                <div class="grid md:grid-cols-2 gap-6">
+                                    <div class="bg-primary-light p-5 rounded-lg">
+                                        <h3 class="text-lg font-semibold mb-2">Company Name</h3>
+                                        <p x-text="parsedInfo.company_name"></p>
+                                    </div>
+                                    <div class="bg-primary-light p-5 rounded-lg">
+                                        <h3 class="text-lg font-semibold mb-2">Position Title</h3>
+                                        <p x-text="parsedInfo.position_title"></p>
+                                    </div>
+                                </div>
+                                
+                                <!-- Other job info -->
+                                <div class="grid md:grid-cols-2 gap-6">
+                                    <div class="bg-primary-light p-5 rounded-lg">
+                                        <h3 class="text-lg font-semibold mb-2">Company Values</h3>
+                                        <ul class="list-disc pl-5 space-y-1">
+                                            <template x-for="(line, index) in parsedInfo.company_values.split('- ').filter(item => item.trim().length > 0)" :key="index">
+                                                <li x-text="line.trim()"></li>
+                                            </template>
+                                        </ul>
+                                    </div>
+                                    <div class="bg-primary-light p-5 rounded-lg">
+                                        <h3 class="text-lg font-semibold mb-2">Job Duties</h3>
+                                        <ul class="list-disc pl-5 space-y-1">
+                                            <template x-for="(line, index) in parsedInfo.job_duties.split('- ').filter(item => item.trim().length > 0)" :key="index">
+                                                <li x-text="line.trim()"></li>
+                                            </template>
+                                        </ul>
+                                    </div>
+                                    <div class="bg-primary-light p-5 rounded-lg">
+                                        <h3 class="text-lg font-semibold mb-2">Tech Skills</h3>
+                                        <ul class="list-disc pl-5 space-y-1">
+                                            <template x-for="(line, index) in parsedInfo.tech_skills.split('- ').filter(item => item.trim().length > 0)" :key="index">
+                                                <li x-text="line.trim()"></li>
+                                            </template>
+                                        </ul>
+                                    </div>
+                                    <div class="bg-primary-light p-5 rounded-lg">
+                                        <h3 class="text-lg font-semibold mb-2">Soft Skills</h3>
+                                        <ul class="list-disc pl-5 space-y-1">
+                                            <template x-for="(line, index) in parsedInfo.soft_skills.split('- ').filter(item => item.trim().length > 0)" :key="index">
+                                                <li x-text="line.trim()"></li>
+                                            </template>
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex justify-center">
+                                    <button 
+                                        @click="generateQuestions()" 
+                                        :disabled="isGeneratingQuestions" 
+                                        class="btn-primary"
+                                    >
+                                        <span class="spinner" x-show="isGeneratingQuestions"></span>
+                                        <i class="fas fa-list-ul mr-2" x-show="!isGeneratingQuestions"></i>
+                                        <span x-text="isGeneratingQuestions ? 'Generating...' : 'Generate Interview Questions'"></span>
+                                    </button>
+                                </div>
+                            </div>
                         </template>
                     </div>
-                </div>
+                </section>
+            
+                <!-- Step 2: Practice Questions -->
+                <section x-show="questionsGenerated" class="card">
+                    <div class="card-header">
+                        <h2 class="text-2xl font-bold flex items-center">
+                            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary-light text-primary mr-3">2</span>
+                            Practice Questions
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <!-- Question Category Tabs -->
+                        <div class="mb-6">
+                            <div class="flex flex-wrap space-x-2 border-b border-gray-200 pb-2">
+                                <template x-for="(category, index) in Object.keys(questions)" :key="index">
+                                    <button 
+                                        @click="activeCategory = category" 
+                                        :class="{'tab-active': activeCategory === category}"
+                                        class="px-4 py-2 rounded-t-lg font-medium transition-all duration-200"
+                                        x-text="category"
+                                    ></button>
+                                </template>
+                            </div>
+                        </div>
                 
-                <!-- Questions for Selected Category -->
-                <div>
-                    <template x-for="(categoryQuestions, category) in questions" :key="category">
-                        <div x-show="activeCategory === category">
-                            <template x-for="(question, qIndex) in categoryQuestions" :key="qIndex">
-                                <div 
-                                    @click="selectQuestion(question)"
-                                    class="question-card p-4 rounded-lg border border-gray-200 bg-gray-50 mb-3 cursor-pointer hover:bg-indigo-50 hover:border-indigo-200"
-                                    :class="{'border-indigo-500 bg-indigo-50': selectedQuestion === question}"
-                                >
-                                    <p class="text-gray-800" x-text="question"></p>
+                        <!-- Questions for Selected Category -->
+                        <div>
+                            <template x-for="(categoryQuestions, category) in questions" :key="category">
+                                <div x-show="activeCategory === category">
+                                    <template x-for="(question, qIndex) in categoryQuestions" :key="qIndex">
+                                        <div 
+                                            @click="selectQuestion(question)"
+                                            class="question-card"
+                                            :class="{'border-primary bg-primary-light': selectedQuestion === question}"
+                                        >
+                                            <p class="text-gray-800" x-text="question"></p>
+                                        </div>
+                                    </template>
                                 </div>
                             </template>
                         </div>
-                    </template>
-                </div>
-            </section>
+                    </div>
+                </section>
             
-            <!-- Step 3: Record Answer -->
-            <section x-show="selectedQuestion" class="bg-white rounded-xl shadow-md p-6 mb-8">
-                <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-50 text-green-800 mr-3">3</span>
-                    Record Your Answer
-                </h2>
-                
-                <!-- New company and position box with better alignment -->
-                <div class="bg-green-50 p-4 rounded-lg border border-green-100 mb-6">
-                    <div class="flex flex-row items-center justify-start">
-                        <div class="flex items-center mr-8">
-                            <span class="text-sm font-medium text-gray-600">Company:</span>
-                            <span class="ml-2 font-semibold text-green-800" x-text="parsedInfo.company_name || 'Not specified'"></span>
-                        </div>
-                        <div class="flex items-center">
-                            <span class="text-sm font-medium text-gray-600">Position:</span>
-                            <span class="ml-2 font-semibold text-green-800" x-text="parsedInfo.position_title || 'Not specified'"></span>
-                        </div>
+                <!-- Step 3: Record Answer -->
+                <section x-show="selectedQuestion" class="card">
+                    <div class="card-header">
+                        <h2 class="text-2xl font-bold flex items-center">
+                            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary-light text-primary mr-3">3</span>
+                            Record Your Answer
+                        </h2>
                     </div>
-                </div>
-                
-                <!-- New grid layout for interview question and recording section -->
-                <div class="grid md:grid-cols-12 gap-4 mb-6">
-                    <!-- Interviewer Column (35% width) -->
-                    <div class="md:col-span-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Interviewer</label>
-                        <div class="text-center p-4 bg-green-50 rounded-lg border border-green-100 h-full">
-                            <div class="rounded-lg overflow-hidden mb-4 mx-auto w-32 h-32 flex items-center justify-center bg-gray-100">
-                                <img src="/static/interviewer.png" alt="Interviewer" class="max-w-full max-h-full">
+                    <div class="card-body">
+                        <!-- Company info bar -->
+                        <div class="bg-primary-light p-4 rounded-lg mb-6">
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-start sm:space-x-8">
+                                <div class="flex items-center mb-2 sm:mb-0">
+                                    <span class="text-sm font-medium text-primary-dark">Company:</span>
+                                    <span class="ml-2 font-semibold text-primary" x-text="parsedInfo.company_name || 'Not specified'"></span>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="text-sm font-medium text-primary-dark">Position:</span>
+                                    <span class="ml-2 font-semibold text-primary" x-text="parsedInfo.position_title || 'Not specified'"></span>
+                                </div>
                             </div>
-                            
-                            <div class="mb-4">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Voice Accent</label>
-                                <select x-model="voiceOption" class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-700 focus:border-green-700">
-                                    <option value="US English">US English</option>
-                                    <option value="UK English">UK English</option>
-                                    <option value="Australian English">Australian English</option>
-                                    <option value="Indian English">Indian English</option>
-                                    <option value="French">French</option>
-                                    <option value="German">German</option>
-                                    <option value="Spanish">Spanish</option>
-                                </select>
-                            </div>
-                            
-                            <button @click="readQuestionAloud()" :disabled="isReadingAloud" class="btn-secondary w-full px-3 py-2 text-sm rounded-lg font-medium flex items-center justify-center">
-                                <span class="spinner" x-show="isReadingAloud"></span>
-                                <i class="fas fa-volume-up mr-2" x-show="!isReadingAloud"></i>
-                                <span x-text="isReadingAloud ? 'Reading...' : 'Read Question Aloud'"></span>
-                            </button>
-                            
-                            <div x-show="audioPlaying" class="mt-4">
-                                <audio x-ref="audioPlayer" controls class="w-full">
-                                    Your browser does not support the audio element.
-                                </audio>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Question Column (65% width) -->
-                    <div class="md:col-span-8">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Current Question</label>
-                        <div class="p-4 bg-green-50 rounded-lg border border-green-100">
-                            <p class="text-gray-800 font-medium" x-text="selectedQuestion"></p>
                         </div>
                         
-                        <div class="mt-4 p-4 bg-green-50 rounded-lg border border-green-100">
-                            <h3 class="font-medium text-gray-800 mb-2">How to Answer</h3>
-                            <p class="text-gray-700" x-text="questionHints[selectedQuestion] || 'No specific hint available for this question.'"></p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Record Answer Section in 35:65 ratio layout -->
-                <div class="grid md:grid-cols-12 gap-4">
-                    <!-- Recording Button Column (35% width) -->
-                    <div class="md:col-span-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Record Your Answer</label>
-                        <div class="flex flex-col items-center justify-center h-full p-4 bg-green-50 rounded-lg border border-green-100">
-                            <button @click="toggleRecording()" class="mb-4 relative">
-                                <div :class="{'recording-pulse': isRecording}" class="w-16 h-16 rounded-full bg-white border-2 border-gray-300 flex items-center justify-center">
-                                    <i :class="isRecording ? 'fa-stop text-red-500' : 'fa-microphone text-gray-700'" class="fas text-2xl"></i>
+                        <!-- New grid layout for interview question and recording section -->
+                        <div class="grid md:grid-cols-12 gap-6 mb-6">
+                            <!-- Interviewer Column -->
+                            <div class="md:col-span-4">
+                                <label class="form-label">Interviewer</label>
+                                <div class="bg-primary-light rounded-lg p-5 text-center h-full flex flex-col">
+                                    <div class="rounded-lg overflow-hidden mb-4 mx-auto w-32 h-32 flex items-center justify-center bg-white">
+                                        <img src="/static/interviewer.png" alt="Interviewer" class="max-w-full max-h-full">
+                                    </div>
+                                    
+                                    <div class="mb-4 flex-grow">
+                                        <label class="form-label text-center">Voice Accent</label>
+                                        <select 
+                                            x-model="voiceOption" 
+                                            class="form-control text-sm"
+                                        >
+                                            <option value="US English">US English</option>
+                                            <option value="UK English">UK English</option>
+                                            <option value="Australian English">Australian English</option>
+                                            <option value="Indian English">Indian English</option>
+                                            <option value="French">French</option>
+                                            <option value="German">German</option>
+                                            <option value="Spanish">Spanish</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <button 
+                                        @click="readQuestionAloud()" 
+                                        :disabled="isReadingAloud" 
+                                        class="btn-secondary w-full"
+                                    >
+                                        <span class="spinner" x-show="isReadingAloud"></span>
+                                        <i class="fas fa-volume-up mr-2" x-show="!isReadingAloud"></i>
+                                        <span x-text="isReadingAloud ? 'Reading...' : 'Read Question Aloud'"></span>
+                                    </button>
+                                    
+                                    <div x-show="audioPlaying" class="mt-4">
+                                        <audio x-ref="audioPlayer" controls class="w-full">
+                                            Your browser does not support the audio element.
+                                        </audio>
+                                    </div>
                                 </div>
+                            </div>
+                
+                            <!-- Question Column -->
+                            <div class="md:col-span-8">
+                                <label class="form-label">Current Question</label>
+                                <div class="p-5 bg-primary-light rounded-lg mb-4">
+                                    <p class="text-gray-800 font-medium text-lg" x-text="selectedQuestion"></p>
+                                </div>
+                                
+                                <div class="p-5 bg-primary-light rounded-lg">
+                                    <h3 class="font-semibold text-primary-dark mb-3">How to Answer</h3>
+                                    <p class="leading-relaxed" x-text="questionHints[selectedQuestion] || 'No specific hint available for this question.'"></p>
+                                </div>
+                            </div>
+                        </div>
+                
+                        <div class="grid md:grid-cols-12 gap-6">
+                            <!-- Recording Button Column -->
+                            <div class="md:col-span-4">
+                                <label class="form-label">Record Your Answer</label>
+                                <div class="flex flex-col items-center justify-center h-full p-6 bg-primary-light rounded-lg">
+                                    <button @click="toggleRecording()" class="mb-4 relative">
+                                        <div :class="{'recording-pulse': isRecording}" class="w-20 h-20 rounded-full bg-white border-2 border-gray-300 flex items-center justify-center">
+                                            <i :class="isRecording ? 'fa-stop text-red-500' : 'fa-microphone text-gray-700'" class="fas text-2xl"></i>
+                                        </div>
+                                    </button>
+                                    <p x-text="recordingStatus" class="text-sm font-medium text-primary-dark text-center"></p>
+                                </div>
+                            </div>
+                
+                            <!-- Transcription Textarea Column -->
+                            <div class="md:col-span-8">
+                                <label class="form-label">Your Answer (Transcribed)</label>
+                                <textarea 
+                                    x-model="answerText" 
+                                    class="form-control h-48" 
+                                    placeholder="Your transcribed answer will appear here..."
+                                ></textarea>
+                            </div>
+                        </div>
+                
+                        <div class="mt-8 flex justify-center">
+                            <button 
+                                @click="analyzeAnswer()" 
+                                :disabled="isAnalyzingAnswer" 
+                                class="btn-primary"
+                            >
+                                <span class="spinner" x-show="isAnalyzingAnswer"></span>
+                                <i class="fas fa-chart-line mr-2" x-show="!isAnalyzingAnswer"></i>
+                                <span x-text="isAnalyzingAnswer ? 'Analyzing...' : 'Analyze Answer'"></span>
                             </button>
-                            <p x-text="recordingStatus" class="text-sm font-medium text-gray-600 text-center"></p>
                         </div>
                     </div>
-                    
-                    <!-- Transcription Textarea Column (65% width) -->
-                    <div class="md:col-span-8">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Your Answer (Transcribed)</label>
-                        <textarea 
-                            x-model="answerText" 
-                            class="w-full h-40 px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" 
-                            placeholder="Your transcribed answer will appear here..."
-                        ></textarea>
-                    </div>
-                </div>
-                
-                <div class="mt-6 flex justify-center">
-                    <button @click="analyzeAnswer()" :disabled="isAnalyzingAnswer" class="btn-primary px-6 py-3 rounded-lg font-medium flex items-center">
-                        <span class="spinner" x-show="isAnalyzingAnswer"></span>
-                        <i class="fas fa-chart-line mr-2" x-show="!isAnalyzingAnswer"></i>
-                        <span x-text="isAnalyzingAnswer ? 'Analyzing...' : 'Analyze Answer'"></span>
-                    </button>
-                </div>
-            </section>
+                </section>
             
-            <!-- Step 4: Review Analysis -->
-            <section x-show="feedbackText" class="bg-white rounded-xl shadow-md p-6 mb-8">
-                <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-50 text-green-800 mr-3">4</span>
-                    Review Analysis
-                </h2>
-                
-                <div x-show="scores" class="grid md:grid-cols-3 gap-4 mb-6">
-                    <div class="bg-green-50 p-4 rounded-lg border border-green-100">
-                        <h3 class="font-semibold text-gray-800 mb-2">Clarity</h3>
-                        <div class="text-2xl">
-                            <template x-for="i in 10" :key="i">
-                                <span :class="i <= scores.clarity ? `star-${i}` : 'star-empty'"
-                                      x-text="i <= scores.clarity ? '★' : '☆'"></span>
-                            </template>
+                <!-- Step 4: Review Analysis -->
+                <section x-show="feedbackText" class="card">
+                    <div class="card-header">
+                        <h2 class="text-2xl font-bold flex items-center">
+                            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary-light text-primary mr-3">4</span>
+                            Review Analysis
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <div x-show="scores" class="grid md:grid-cols-3 gap-6 mb-6">
+                            <div class="bg-primary-light p-5 rounded-lg">
+                                <h3 class="font-semibold text-primary-dark mb-2 text-center">Clarity</h3>
+                                <div class="text-2xl text-center mb-2">
+                                    <template x-for="i in 10" :key="i">
+                                        <span 
+                                            :class="i <= scores.clarity ? 'text-primary' : 'text-gray-300'"
+                                            x-text="i <= scores.clarity ? '★' : '☆'"
+                                        ></span>
+                                    </template>
+                                </div>
+                                <p class="text-sm text-center font-medium">Score: <span x-text="scores.clarity"></span>/10</p>
+                            </div>
+                            <div class="bg-primary-light p-5 rounded-lg">
+                                <h3 class="font-semibold text-primary-dark mb-2 text-center">Relevance</h3>
+                                <div class="text-2xl text-center mb-2">
+                                    <template x-for="i in 10" :key="i">
+                                        <span 
+                                            :class="i <= scores.relevance ? 'text-primary' : 'text-gray-300'"
+                                            x-text="i <= scores.relevance ? '★' : '☆'"
+                                        ></span>
+                                    </template>
+                                </div>
+                                <p class="text-sm text-center font-medium">Score: <span x-text="scores.relevance"></span>/10</p>
+                            </div>
+                            <div class="bg-primary-light p-5 rounded-lg">
+                                <h3 class="font-semibold text-primary-dark mb-2 text-center">Confidence</h3>
+                                <div class="text-2xl text-center mb-2">
+                                    <template x-for="i in 10" :key="i">
+                                        <span 
+                                            :class="i <= scores.confidence ? 'text-primary' : 'text-gray-300'"
+                                            x-text="i <= scores.confidence ? '★' : '☆'"
+                                        ></span>
+                                    </template>
+                                </div>
+                                <p class="text-sm text-center font-medium">Score: <span x-text="scores.confidence"></span>/10</p>
+                            </div>
                         </div>
-                        <p class="text-sm text-gray-600 mt-1">Score: <span x-text="scores.clarity"></span>/10</p>
-                    </div>
-                    <div class="bg-green-50 p-4 rounded-lg border border-green-100">
-                        <h3 class="font-semibold text-gray-800 mb-2">Relevance</h3>
-                        <div class="text-2xl">
-                            <template x-for="i in 10" :key="i">
-                                <span :class="i <= scores.relevance ? `star-${i}` : 'star-empty'"
-                                      x-text="i <= scores.relevance ? '★' : '☆'"></span>
-                            </template>
+                        
+                        <div class="bg-primary-light p-6 rounded-lg">
+                            <h3 class="font-semibold text-primary-dark mb-4 text-lg">Detailed Feedback</h3>
+                            <div class="prose max-w-none text-gray-700 whitespace-pre-line leading-relaxed" 
+                                x-text="feedbackText">
+                            </div>
                         </div>
-                        <p class="text-sm text-gray-600 mt-1">Score: <span x-text="scores.relevance"></span>/10</p>
                     </div>
-                    <div class="bg-green-50 p-4 rounded-lg border border-green-100">
-                        <h3 class="font-semibold text-gray-800 mb-2">Confidence</h3>
-                        <div class="text-2xl">
-                            <template x-for="i in 10" :key="i">
-                                <span :class="i <= scores.confidence ? `star-${i}` : 'star-empty'"
-                                      x-text="i <= scores.confidence ? '★' : '☆'"></span>
-                            </template>
+                </section>
+            
+                <!-- Step 5: Get Model Answer -->
+                <section x-show="feedbackText" class="card">
+                    <div class="card-header">
+                        <h2 class="text-2xl font-bold flex items-center">
+                            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary-light text-primary mr-3">5</span>
+                            Get Model Answer
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="flex justify-center mb-6">
+                            <button 
+                                @click="generateModelAnswer()" 
+                                :disabled="isGeneratingModel" 
+                                class="btn-primary"
+                            >
+                                <span class="spinner" x-show="isGeneratingModel"></span>
+                                <i class="fas fa-magic mr-2" x-show="!isGeneratingModel"></i>
+                                <span x-text="isGeneratingModel ? 'Generating...' : 'Generate Model Answer'"></span>
+                            </button>
                         </div>
-                        <p class="text-sm text-gray-600 mt-1">Score: <span x-text="scores.confidence"></span>/10</p>
+                        
+                        <template x-if="modelAnswer">
+                            <div class="bg-primary-light p-6 rounded-lg">
+                                <h3 class="font-semibold text-primary-dark mb-4 text-lg">Sample Professional Answer</h3>
+                                <div class="prose max-w-none text-gray-700 whitespace-pre-line leading-relaxed" 
+                                    x-text="modelAnswer">
+                                </div>
+                            </div>
+                        </template>
                     </div>
-                </div>
-                
-                <div class="bg-green-50 p-6 rounded-lg border border-green-100">
-                    <h3 class="font-semibold text-gray-800 mb-3">Detailed Feedback</h3>
-                    <div class="prose max-w-none text-gray-700 whitespace-pre-line leading-relaxed" 
-                         x-text="feedbackText"></div>
-                </div>
-            </section>
+                </section>
             
-            <!-- Step 5: Get Model Answer -->
-            <section x-show="feedbackText" class="bg-white rounded-xl shadow-md p-6 mb-8">
-                <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-50 text-green-800 mr-3">5</span>
-                    Get Model Answer
-                </h2>
-                
-                <button @click="generateModelAnswer()" :disabled="isGeneratingModel" class="btn-primary px-6 py-3 rounded-lg font-medium flex items-center mb-6">
-                    <span class="spinner" x-show="isGeneratingModel"></span>
-                    <i class="fas fa-magic mr-2" x-show="!isGeneratingModel"></i>
-                    <span x-text="isGeneratingModel ? 'Generating...' : 'Generate Model Answer'"></span>
-                </button>
-                
-                <template x-if="modelAnswer">
-                    <div class="bg-green-50 p-6 rounded-lg border border-green-100">
-                        <h3 class="font-semibold text-gray-800 mb-3">Sample Professional Answer</h3>
-                        <div class="prose max-w-none text-gray-700 whitespace-pre-line leading-relaxed" 
-                             x-text="modelAnswer"></div>
+                <!-- Step 5.5: Follow-up Questions -->
+                <section x-show="feedbackText && modelAnswer" class="card">
+                    <div class="card-header">
+                        <h2 class="text-2xl font-bold flex items-center">
+                            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary-light text-primary mr-3">5.5</span>
+                            Potential Follow-up Questions
+                        </h2>
                     </div>
-                </template>
-            </section>
+                    <div class="card-body">
+                        <div class="flex justify-center mb-6">
+                            <button 
+                                @click="generateFollowUpQuestions()" 
+                                :disabled="isGeneratingFollowUp" 
+                                class="btn-primary"
+                            >
+                                <span class="spinner" x-show="isGeneratingFollowUp"></span>
+                                <i class="fas fa-question-circle mr-2" x-show="!isGeneratingFollowUp"></i>
+                                <span x-text="isGeneratingFollowUp ? 'Generating...' : 'Generate Follow-up Questions'"></span>
+                            </button>
+                        </div>
+                        
+                        <template x-if="followUpQuestions && followUpQuestions.length > 0">
+                            <div class="bg-primary-light p-6 rounded-lg">
+                                <h3 class="font-semibold text-primary-dark mb-4 text-lg">Questions the Interviewer Might Ask Next</h3>
+                                <ul class="space-y-4 list-disc pl-6">
+                                    <template x-for="(question, index) in followUpQuestions" :key="index">
+                                        <li class="prose leading-relaxed" x-text="question"></li>
+                                    </template>
+                                </ul>
+                            </div>
+                        </template>
+                    </div>
+                </section>
             
-            <!-- Step 5.5: Follow-up Questions -->
-            <section x-show="feedbackText && modelAnswer" class="bg-white rounded-xl shadow-md p-6 mb-8">
-                <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-50 text-green-800 mr-3">5.5</span>
-                    Potential Follow-up Questions
-                </h2>
-                
-                <button @click="generateFollowUpQuestions()" :disabled="isGeneratingFollowUp" class="btn-primary px-6 py-3 rounded-lg font-medium flex items-center mb-6">
-                    <span class="spinner" x-show="isGeneratingFollowUp"></span>
-                    <i class="fas fa-question-circle mr-2" x-show="!isGeneratingFollowUp"></i>
-                    <span x-text="isGeneratingFollowUp ? 'Generating...' : 'Generate Follow-up Questions'"></span>
-                </button>
-                
-                <template x-if="followUpQuestions && followUpQuestions.length > 0">
-                    <div class="bg-green-50 p-6 rounded-lg border border-green-100">
-                        <h3 class="font-semibold text-gray-800 mb-3">Questions the Interviewer Might Ask Next</h3>
-                        <ul class="space-y-3 text-gray-700 list-disc pl-6">
-                            <template x-for="(question, index) in followUpQuestions" :key="index">
-                                <li class="prose max-w-none leading-relaxed" x-text="question"></li>
-                            </template>
-                        </ul>
+                <!-- Step 6: Save Work -->
+                <section x-show="feedbackText && modelAnswer" class="card">
+                    <div class="card-header">
+                        <h2 class="text-2xl font-bold flex items-center">
+                            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary-light text-primary mr-3">6</span>
+                            Save Your Work
+                        </h2>
                     </div>
-                </template>
-            </section>
+                    <div class="card-body">
+                        <div class="flex justify-center">
+                            <button 
+                                @click="saveToHTML()" 
+                                :disabled="isSaving" 
+                                class="btn-primary"
+                            >
+                                <span class="spinner" x-show="isSaving"></span>
+                                <i class="fas fa-download mr-2" x-show="!isSaving"></i>
+                                <span x-text="isSaving ? 'Saving...' : 'Save as HTML'"></span>
+                            </button>
+                        </div>
+                        
+                        <template x-if="downloadLink">
+                            <div class="mt-6 p-5 bg-primary-light rounded-lg text-center">
+                                <p class="text-primary-dark mb-4 font-medium">Your file is ready to download!</p>
+                                <a 
+                                    :href="downloadLink" 
+                                    class="btn-primary inline-flex" 
+                                    download
+                                >
+                                    <i class="fas fa-cloud-download-alt mr-2"></i> Download File
+                                </a>
+                            </div>
+                        </template>
+                    </div>
+                </section>
             
-            <!-- Step 6: Save Work -->
-            <section x-show="feedbackText && modelAnswer" class="bg-white rounded-xl shadow-md p-6 mb-8">
-                <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-50 text-green-800 mr-3">6</span>
-                    Save Your Work
-                </h2>
-                
-                <button @click="saveToHTML()" :disabled="isSaving" class="btn-primary px-6 py-3 rounded-lg font-medium flex items-center">
-                    <span class="spinner" x-show="isSaving"></span>
-                    <i class="fas fa-download mr-2" x-show="!isSaving"></i>
-                    <span x-text="isSaving ? 'Saving...' : 'Save as HTML'"></span>
-                </button>
-                
-                <template x-if="downloadLink">
-                    <div class="mt-6 p-4 bg-green-50 border border-green-100 rounded-lg">
-                        <p class="text-green-800 mb-3">Your file is ready to download!</p>
-                        <a :href="downloadLink" class="btn-primary px-6 py-3 rounded-lg font-medium inline-flex items-center" download>
-                            <i class="fas fa-cloud-download-alt mr-2"></i> Download File
-                        </a>
+                <!-- Step 7: Continue or Start New -->
+                <section x-show="feedbackText && modelAnswer" class="card">
+                    <div class="card-header">
+                        <h2 class="text-2xl font-bold flex items-center">
+                            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary-light text-primary mr-3">7</span>
+                            Continue Your Practice
+                        </h2>
                     </div>
-                </template>
-            </section>
-            
-            <!-- Step 7: Continue or Start New -->
-            <section x-show="feedbackText && modelAnswer" class="bg-white rounded-xl shadow-md p-6 mb-8">
-                <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-50 text-green-800 mr-3">7</span>
-                    Continue Your Practice
-                </h2>
-                
-                <div class="grid md:grid-cols-2 gap-6">
-                    <div class="bg-green-50 p-6 rounded-lg border border-green-100 text-center">
-                        <h3 class="font-semibold text-gray-800 mb-4">Practice Another Question</h3>
-                        <p class="text-gray-600 mb-4">Continue practicing with the same job information and try another interview question.</p>
-                        <button @click="practiceAnotherQuestion()" class="btn-primary px-6 py-3 rounded-lg font-medium">
-                            <i class="fas fa-redo mr-2"></i> Try Another Question
-                        </button>
+                    <div class="card-body">
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div class="bg-primary-light p-6 rounded-lg text-center">
+                                <h3 class="font-semibold text-primary-dark mb-4 text-lg">Practice Another Question</h3>
+                                <p class="text-gray-600 mb-6">Continue practicing with the same job information and try another interview question.</p>
+                                <button 
+                                    @click="practiceAnotherQuestion()" 
+                                    class="btn-primary"
+                                >
+                                    <i class="fas fa-redo mr-2"></i> Try Another Question
+                                </button>
+                            </div>
+                            
+                            <div class="bg-primary-light p-6 rounded-lg text-center">
+                                <h3 class="font-semibold text-primary-dark mb-4 text-lg">Start Fresh</h3>
+                                <p class="text-gray-600 mb-6">Clear all data and start over with a different company or position.</p>
+                                <button 
+                                    @click="startOver()" 
+                                    class="btn-secondary"
+                                >
+                                    <i class="fas fa-sync mr-2"></i> Start New Practice
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                    
-                    <div class="bg-green-50 p-6 rounded-lg border border-green-100 text-center">
-                        <h3 class="font-semibold text-gray-800 mb-4">Start Fresh</h3>
-                        <p class="text-gray-600 mb-4">Clear all data and start over with a different company or position.</p>
-                        <button @click="startOver()" class="btn-secondary px-6 py-3 rounded-lg font-medium">
-                            <i class="fas fa-sync mr-2"></i> Start New Practice
-                        </button>
-                    </div>
-                </div>
-            </section>
+                </section>
+            </div>
         </main>
         
-        <!-- Footer -->
-        <footer class="bg-green-900 py-8 px-4 text-center">
-            <div class="container">
-                <p class="text-green-100">Husky Interview Prep © 2025. All rights reserved.</p>
-                <p class="text-green-200 text-sm mt-2">Powered by Cathy and AI and created to help you succeed.</p>
+        <footer class="bg-primary py-8 text-center mt-12">
+            <div class="container mx-auto px-4">
+                <p class="text-white/90">Husky Interview Prep © 2025. All rights reserved.</p>
+                <p class="text-white/70 text-sm mt-2">Powered by Cathy and AI and created to help you succeed.</p>
             </div>
         </footer>
     </div>
-    
+
     <script>
         function app() {
             return {
@@ -1953,6 +2084,6 @@ if __name__ == "__main__":
     </script>
 </body>
 </html>
-        ''')
+''')
     
     app.run(debug=True, host='0.0.0.0', port=5002)

@@ -444,7 +444,7 @@
                 </div>
             </section>
             
-            <!-- Step 5: Model Answer -->
+            <!-- Step 5: Get Model Answer -->
             <section x-show="feedbackText" class="bg-white rounded-xl shadow-md p-6 mb-8">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
                     <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-50 text-green-800 mr-3">5</span>
@@ -462,6 +462,31 @@
                         <h3 class="font-semibold text-gray-800 mb-3">Sample Professional Answer</h3>
                         <div class="prose max-w-none text-gray-700 whitespace-pre-line leading-relaxed" 
                              x-text="modelAnswer"></div>
+                    </div>
+                </template>
+            </section>
+            
+            <!-- Step 5.5: Follow-up Questions -->
+            <section x-show="feedbackText && modelAnswer" class="bg-white rounded-xl shadow-md p-6 mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-50 text-green-800 mr-3">5.5</span>
+                    Potential Follow-up Questions
+                </h2>
+                
+                <button @click="generateFollowUpQuestions()" :disabled="isGeneratingFollowUp" class="btn-primary px-6 py-3 rounded-lg font-medium flex items-center mb-6">
+                    <span class="spinner" x-show="isGeneratingFollowUp"></span>
+                    <i class="fas fa-question-circle mr-2" x-show="!isGeneratingFollowUp"></i>
+                    <span x-text="isGeneratingFollowUp ? 'Generating...' : 'Generate Follow-up Questions'"></span>
+                </button>
+                
+                <template x-if="followUpQuestions && followUpQuestions.length > 0">
+                    <div class="bg-green-50 p-6 rounded-lg border border-green-100">
+                        <h3 class="font-semibold text-gray-800 mb-3">Questions the Interviewer Might Ask Next</h3>
+                        <ul class="space-y-3 text-gray-700 list-disc pl-6">
+                            <template x-for="(question, index) in followUpQuestions" :key="index">
+                                <li class="prose max-w-none leading-relaxed" x-text="question"></li>
+                            </template>
+                        </ul>
                     </div>
                 </template>
             </section>
@@ -560,6 +585,10 @@
                 scores: null,
                 feedbackText: '',
                 modelAnswer: '',
+                
+                // Follow-up questions
+                followUpQuestions: [],
+                isGeneratingFollowUp: false,
                 
                 // Audio playback
                 voiceOption: 'US English',
@@ -861,7 +890,8 @@
                                 selected_question: this.selectedQuestion,
                                 answer_text: this.answerText,
                                 feedback: this.feedbackText,
-                                model_answer: this.modelAnswer
+                                model_answer: this.modelAnswer,
+                                follow_up_questions: this.followUpQuestions
                             }),
                         });
                         
@@ -882,6 +912,7 @@
                     this.scores = null;
                     this.feedbackText = '';
                     this.modelAnswer = '';
+                    this.followUpQuestions = [];
                     this.audioSrc = '';
                     this.audioPlaying = false;
                     this.downloadLink = '';
@@ -905,12 +936,45 @@
                     this.scores = null;
                     this.feedbackText = '';
                     this.modelAnswer = '';
+                    this.followUpQuestions = [];
                     this.audioSrc = '';
                     this.audioPlaying = false;
                     this.downloadLink = '';
                     
                     // Scroll to top
                     window.scrollTo({ top: 0, behavior: 'smooth' });
+                },
+                
+                async generateFollowUpQuestions() {
+                    if (!this.selectedQuestion) {
+                        alert('Please select a question first.');
+                        return;
+                    }
+                    
+                    this.isGeneratingFollowUp = true;  // Start loading indicator
+                    
+                    try {
+                        const response = await fetch('/generate-follow-up-questions', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                question: this.selectedQuestion,
+                                job_desc: this.jobDesc,
+                                resume: this.resume,
+                                answer_text: this.answerText
+                            }),
+                        });
+                        
+                        const data = await response.json();
+                        this.followUpQuestions = data.follow_up_questions;
+                    } catch (error) {
+                        console.error('Error generating follow-up questions:', error);
+                        alert('Error generating follow-up questions. Please try again.');
+                    } finally {
+                        this.isGeneratingFollowUp = false;  // Stop loading indicator
+                    }
                 }
             };
         }

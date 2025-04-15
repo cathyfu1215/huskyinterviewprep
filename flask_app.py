@@ -224,11 +224,61 @@ class Evaluator:
         
         return scores, feedback
 
+class FollowUpQuestioner:
+    def generate_follow_up_questions(self, job_description, resume, question, answer):
+        """Generates insightful follow-up questions based on the user's answer."""
+        prompt = f"""
+        SYSTEM: You are an expert interviewer with 30 years of experience hiring for top tech companies. Your task is to generate 2-3 thoughtful follow-up questions based on a candidate's interview answer.
+
+        INSTRUCTIONS:
+        - Analyze the candidate's answer for areas that could be explored further
+        - Look for opportunities to dive deeper into their experience, skills, or thought process
+        - Consider the job requirements and the candidate's resume when crafting questions
+        - Generate questions that allow the candidate to elaborate on strengths
+        - Include questions that help address potential weaknesses in a constructive way
+        - Each question should be specific and related to the candidate's response
+        - Keep questions concise and direct
+        - Format the output with a numbered list (1., 2., 3.)
+
+        JOB DESCRIPTION:
+        {job_description}
+
+        RESUME:
+        {resume}
+
+        INTERVIEW QUESTION:
+        {question}
+
+        CANDIDATE'S ANSWER:
+        {answer}
+
+        FOLLOW-UP QUESTIONS (generate exactly 2-3):
+        """
+        
+        response = prompt_llm(prompt)
+        
+        # Extract the questions as a list
+        questions = []
+        for line in response.strip().split('\n'):
+            line = line.strip()
+            if line and (line.startswith('1.') or line.startswith('2.') or line.startswith('3.')):
+                questions.append(line)
+        
+        # If no questions were extracted, return the full response
+        if not questions:
+            # Split by newlines and filter out empty lines
+            questions = [line.strip() for line in response.strip().split('\n') if line.strip()]
+            # Limit to 3 questions
+            questions = questions[:3]
+        
+        return questions
+
 class InterviewAgentManager:
     def __init__(self):
         self.analyzer = Analyzer()
         self.drafter = Drafter()
         self.evaluator = Evaluator()
+        self.follow_up_questioner = FollowUpQuestioner()
     
     def process_interview(self, job_description, company_values, question, company_info, resume, voice_answer):
         """Manages the full process from analysis to evaluation."""
@@ -426,7 +476,7 @@ def text_to_speech(text, voice_option="US English"):
         print(f"TTS Error: {e}")
         return None
 
-def save_to_html(job_desc, company_info, resume, company_values, tech_skills, soft_skills, job_duties, selected_question, answer_text, feedback, model_answer):
+def save_to_html(job_desc, company_info, resume, company_values, tech_skills, soft_skills, job_duties, selected_question, answer_text, feedback, model_answer, follow_up_questions=None):
     """Generate HTML content for download."""
     # Get current date and time
     current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
@@ -619,6 +669,9 @@ def save_to_html(job_desc, company_info, resume, company_values, tech_skills, so
                     {model_answer}
                 </div>
             </div>
+            
+            <!-- Follow-up Questions -->
+            {'<div class="info-section"><h2 class="section-title">Potential Follow-up Questions</h2><div class="follow-up-questions">' + ''.join([f'<div class="follow-up-question"><p>{q}</p></div>' for q in (follow_up_questions or [])]) + '</div></div>' if follow_up_questions else ''}
             
             <!-- Feedback -->
             <div class="info-section">
@@ -834,6 +887,34 @@ def text_to_speech_endpoint():
     
     return jsonify({'audio': audio_base64})
 
+@app.route('/generate-follow-up-questions', methods=['POST'])
+def generate_follow_up_questions_endpoint():
+    data = request.get_json()
+    question = data.get('question', '')
+    job_desc = data.get('job_desc', session.get('job_desc', ''))
+    resume = data.get('resume', session.get('resume', ''))
+    answer_text = data.get('answer_text', '')
+    
+    if not question or not answer_text:
+        return jsonify({
+            'follow_up_questions': ['Please provide both a question and your answer to generate follow-up questions.']
+        })
+    
+    try:
+        follow_up_questions = interview_manager.follow_up_questioner.generate_follow_up_questions(
+            job_desc, resume, question, answer_text
+        )
+        
+        return jsonify({'follow_up_questions': follow_up_questions})
+    except Exception as e:
+        print(f"Error generating follow-up questions: {str(e)}")
+        default_questions = [
+            "Could you elaborate more on your experience in this area?",
+            "How would you apply these skills in our company context?",
+            "Can you provide a specific example of how you've handled similar situations?"
+        ]
+        return jsonify({'follow_up_questions': default_questions})
+
 @app.route('/save-to-html', methods=['POST'])
 def save_to_html_endpoint():
     data = request.get_json()
@@ -848,10 +929,11 @@ def save_to_html_endpoint():
     answer_text = data.get('answer_text', '')
     feedback = data.get('feedback', '')
     model_answer = data.get('model_answer', '')
+    follow_up_questions = data.get('follow_up_questions', [])
     
     html_file_path = save_to_html(
         job_desc, company_info, resume, company_values, tech_skills, 
-        soft_skills, job_duties, selected_question, answer_text, feedback, model_answer
+        soft_skills, job_duties, selected_question, answer_text, feedback, model_answer, follow_up_questions
     )
     
     # Generate a unique ID for this file for the frontend to request it
@@ -1334,7 +1416,7 @@ if __name__ == "__main__":
                 </div>
             </section>
             
-            <!-- Step 5: Model Answer -->
+            <!-- Step 5: Get Model Answer -->
             <section x-show="feedbackText" class="bg-white rounded-xl shadow-md p-6 mb-8">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
                     <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-50 text-green-800 mr-3">5</span>
@@ -1352,6 +1434,31 @@ if __name__ == "__main__":
                         <h3 class="font-semibold text-gray-800 mb-3">Sample Professional Answer</h3>
                         <div class="prose max-w-none text-gray-700 whitespace-pre-line leading-relaxed" 
                              x-text="modelAnswer"></div>
+                    </div>
+                </template>
+            </section>
+            
+            <!-- Step 5.5: Follow-up Questions -->
+            <section x-show="feedbackText && modelAnswer" class="bg-white rounded-xl shadow-md p-6 mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-50 text-green-800 mr-3">5.5</span>
+                    Potential Follow-up Questions
+                </h2>
+                
+                <button @click="generateFollowUpQuestions()" :disabled="isGeneratingFollowUp" class="btn-primary px-6 py-3 rounded-lg font-medium flex items-center mb-6">
+                    <span class="spinner" x-show="isGeneratingFollowUp"></span>
+                    <i class="fas fa-question-circle mr-2" x-show="!isGeneratingFollowUp"></i>
+                    <span x-text="isGeneratingFollowUp ? 'Generating...' : 'Generate Follow-up Questions'"></span>
+                </button>
+                
+                <template x-if="followUpQuestions && followUpQuestions.length > 0">
+                    <div class="bg-green-50 p-6 rounded-lg border border-green-100">
+                        <h3 class="font-semibold text-gray-800 mb-3">Questions the Interviewer Might Ask Next</h3>
+                        <ul class="space-y-3 text-gray-700 list-disc pl-6">
+                            <template x-for="(question, index) in followUpQuestions" :key="index">
+                                <li class="prose max-w-none leading-relaxed" x-text="question"></li>
+                            </template>
+                        </ul>
                     </div>
                 </template>
             </section>
@@ -1450,6 +1557,10 @@ if __name__ == "__main__":
                 scores: null,
                 feedbackText: '',
                 modelAnswer: '',
+                
+                // Follow-up questions
+                followUpQuestions: [],
+                isGeneratingFollowUp: false,
                 
                 // Audio playback
                 voiceOption: 'US English',
@@ -1751,7 +1862,8 @@ if __name__ == "__main__":
                                 selected_question: this.selectedQuestion,
                                 answer_text: this.answerText,
                                 feedback: this.feedbackText,
-                                model_answer: this.modelAnswer
+                                model_answer: this.modelAnswer,
+                                follow_up_questions: this.followUpQuestions
                             }),
                         });
                         
@@ -1772,6 +1884,7 @@ if __name__ == "__main__":
                     this.scores = null;
                     this.feedbackText = '';
                     this.modelAnswer = '';
+                    this.followUpQuestions = [];
                     this.audioSrc = '';
                     this.audioPlaying = false;
                     this.downloadLink = '';
@@ -1795,12 +1908,45 @@ if __name__ == "__main__":
                     this.scores = null;
                     this.feedbackText = '';
                     this.modelAnswer = '';
+                    this.followUpQuestions = [];
                     this.audioSrc = '';
                     this.audioPlaying = false;
                     this.downloadLink = '';
                     
                     // Scroll to top
                     window.scrollTo({ top: 0, behavior: 'smooth' });
+                },
+                
+                async generateFollowUpQuestions() {
+                    if (!this.selectedQuestion) {
+                        alert('Please select a question first.');
+                        return;
+                    }
+                    
+                    this.isGeneratingFollowUp = true;  // Start loading indicator
+                    
+                    try {
+                        const response = await fetch('/generate-follow-up-questions', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                question: this.selectedQuestion,
+                                job_desc: this.jobDesc,
+                                resume: this.resume,
+                                answer_text: this.answerText
+                            }),
+                        });
+                        
+                        const data = await response.json();
+                        this.followUpQuestions = data.follow_up_questions;
+                    } catch (error) {
+                        console.error('Error generating follow-up questions:', error);
+                        alert('Error generating follow-up questions. Please try again.');
+                    } finally {
+                        this.isGeneratingFollowUp = false;  // Stop loading indicator
+                    }
                 }
             };
         }

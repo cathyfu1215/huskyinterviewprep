@@ -476,7 +476,7 @@ def text_to_speech(text, voice_option="US English"):
         print(f"TTS Error: {e}")
         return None
 
-def save_to_html(job_desc, company_info, resume, company_values, tech_skills, soft_skills, job_duties, selected_question, answer_text, feedback, model_answer, follow_up_questions=None):
+def save_to_html(job_desc, company_info, resume, company_name, position_title, company_values, tech_skills, soft_skills, job_duties, selected_question, answer_text, feedback, model_answer, follow_up_questions=None):
     """Generate HTML content for download."""
     # Get current date and time
     current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
@@ -634,8 +634,8 @@ def save_to_html(job_desc, company_info, resume, company_values, tech_skills, so
             <div class="header-content">
                 <h1>Interview Preparation Summary</h1>
                 <div class="company-info">
-                    <strong>Company:</strong> {company_values.split(':')[0] if ':' in company_values else 'Not specified'} |
-                    <strong>Position:</strong> {tech_skills.split(':')[0] if ':' in tech_skills else 'Not specified'}
+                    <strong>Company:</strong> {company_name if company_name else 'Not specified'} |
+                    <strong>Position:</strong> {position_title if position_title else 'Not specified'}
                 </div>
                 <div class="timestamp">Generated on {datetime.now().strftime("%B %d, %Y at %I:%M %p")}</div>
             </div>
@@ -930,9 +930,13 @@ def save_to_html_endpoint():
     feedback = data.get('feedback', '')
     model_answer = data.get('model_answer', '')
     follow_up_questions = data.get('follow_up_questions', [])
+    # Retrieve company name and position title from parsed info if available
+    parsed_info = session.get('parsed_info', {})
+    company_name = data.get('company_name', parsed_info.get('company_name', ''))
+    position_title = data.get('position_title', parsed_info.get('position_title', ''))
     
     html_file_path = save_to_html(
-        job_desc, company_info, resume, company_values, tech_skills, 
+        job_desc, company_info, resume, company_name, position_title, company_values, tech_skills, 
         soft_skills, job_duties, selected_question, answer_text, feedback, model_answer, follow_up_questions
     )
     

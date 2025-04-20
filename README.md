@@ -8,32 +8,12 @@ Husky Interview Prep is an AI-powered interview preparation tool designed to hel
 ## Features
 
 - **Job Analysis**: Automatically extracts key skills, values, and requirements from job descriptions
-- **Personalized Questions**: Generates tailored interview questions based on the job description and your resume
+- **Personalized Questions**: Generate interview questions as well as follow-up questions based on the job description and your resume
 - **Voice Interaction**: Practice answering questions verbally and get your responses transcribed
 - **AI Feedback**: Receive detailed feedback on clarity, relevance, and confidence of your answers
 - **Model Answers**: View AI-generated sample answers to learn effective response strategies
 - **Text-to-Speech**: Hear questions read aloud in different accents for a realistic experience
 - **Exportable Results**: Save your practice sessions as HTML files for later review
-
-## Motivation
-
-As a job seeker, I found that preparing for interviews can be challenging without proper guidance and feedback. Most people practice alone, without knowing if their answers are effective or aligned with what employers are looking for. I built Husky Interview Prep to leverage AI technology to provide intelligent, personalized interview coaching that helps candidates build confidence and improve their chances of success.
-
-## Try it out!
-(No need to install anything, but a simpler version)
-https://huggingface.co/spaces/cathyfu1215/huskyInterviewPrep
-
-## Design Document & Presentation
-
-https://gamma.app/docs/Job-Application-Accelerator-6j7oxopdrchd1kv
-
-## Proof of Concept Presentation
-(Click to see the video)
-
-[![Watch the video](https://img.youtube.com/vi/iYD9pknqTcg/maxresdefault.jpg)](https://www.youtube.com/watch?v=iYD9pknqTcg)
-
-## Blogs about this project
-https://medium.com/@cathyfu1215/my-journey-building-husky-interview-prep-from-zero-to-ai-powered-interview-coach-c9798569908f
 
 ## Technologies Used
 
@@ -42,36 +22,22 @@ https://medium.com/@cathyfu1215/my-journey-building-husky-interview-prep-from-ze
 - **Frontend**: HTML, CSS, Alpine.js, TailwindCSS
 - **Speech Processing**: Text-to-Speech, Speech-to-Text conversion
 
-## Getting Started
+## MVP Presentation
+(Click to see the video)
+[![Watch the video](https://img.youtube.com/vi/ZQk1MGm-dYw/maxresdefault.jpg)](https://www.youtube.com/watch?v=ZQk1MGm-dYw)
 
-Clone the repository and install the required dependencies to run the application locally:
+## Proof of Concept Presentation
+(Click to see the video)
 
-```bash
-git clone https://github.com/yourusername/huskyinterviewprep.git
-cd huskyinterviewprep
-```
+[![Watch the video](https://img.youtube.com/vi/iYD9pknqTcg/maxresdefault.jpg)](https://www.youtube.com/watch?v=iYD9pknqTcg)
 
-### Installation Options
+## Design Document & Presentation
 
-#### For Users
-If you just want to run the application:
+https://gamma.app/docs/Job-Application-Accelerator-6j7oxopdrchd1kv
 
-```bash
-pip install -r requirements.txt
-python flask_app.py
-```
+## Blogs about this project
+https://medium.com/@cathyfu1215/my-journey-building-husky-interview-prep-from-zero-to-ai-powered-interview-coach-c9798569908f
 
-#### For Developers
-If you want to contribute to the project or run tests:
-
-```bash
-pip install -r requirements_for_developers.txt
-python flask_app.py
-```
-
-The developer requirements include additional tools for testing, code quality, documentation, and debugging.
-
-Make sure to set up your TOGETHER_API_KEY in a .env file.
 
 ## Running Tests
 
@@ -86,3 +52,4 @@ For coverage information, run:
 ```bash
 pytest test_flask_app.py --cov=flask_app
 ```
+

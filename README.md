@@ -39,17 +39,67 @@ https://gamma.app/docs/Job-Application-Accelerator-6j7oxopdrchd1kv
 https://medium.com/@cathyfu1215/my-journey-building-husky-interview-prep-from-zero-to-ai-powered-interview-coach-c9798569908f
 
 
-## Running Tests
 
-Tests are available to help ensure the application works as expected:
+## How to Set Up the Project
+### 1. Clone the Repository
 
-```bash
-pytest test_flask_app.py
+First, clone the repository to your local machine:
+
+```
+git clone https://github.com/your-username/huskyinterviewprep.git
+cd huskyinterviewprep
 ```
 
-For coverage information, run:
+### 2. Set Up the Virtual Environment
+To create and activate a virtual environment:
 
-```bash
-pytest test_flask_app.py --cov=flask_app
+**On macOS/Linux**:
+
+
 ```
+python3 -m venv myenv
+source myenv/bin/activate
+```
+
+**On Windows:** 
+```
+python -m venv myenv
+myenv\Scripts\activate
+```
+
+### 3. Install Required Dependencies
+Once inside the virtual environment, install the project’s dependencies using pip:
+
+```
+pip install -r requirements.txt
+```
+
+
+### 4.Set Up the ```.env``` File
+Create a .env file in the root of the project directory to securely store your API key:
+
+```
+touch .env
+```
+
+Then open the ```.env file``` and add your ```TOGETHER_API_KEY``` like this:
+```
+TOGETHER_API_KEY=your-real-api-key-here
+```
+Make sure to replace ```your-real-api-key-here``` with the actual API key you obtained from Together.
+
+
+
+
+
+
+
+### 5. Run the Flask App
+After installing the dependencies, run the Flask application:
+
+```
+python flask_app.py
+```
+
+
 

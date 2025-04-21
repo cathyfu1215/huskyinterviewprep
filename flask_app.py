@@ -4,7 +4,7 @@ import speech_recognition as sr
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 import requests
-from together import Together
+import together
 import json
 import re
 from dotenv import load_dotenv
@@ -24,9 +24,10 @@ app.secret_key = os.urandom(24)
 
 # Initialize Together client
 your_api_key = os.getenv("TOGETHER_API_KEY")
-client = Together(api_key=your_api_key)
+together.api_key = your_api_key
 
-def prompt_llm(prompt, show_cost=False):
+
+def prompt_llm(prompt, show_cost=True):
     """Function to send prompt to an LLM via the Together API."""
     model = "meta-llama/Meta-Llama-3-8B-Instruct-Lite"
     tokens = len(prompt.split())
@@ -37,17 +38,22 @@ def prompt_llm(prompt, show_cost=False):
         print(f"Estimated cost for {model}: ${cost:.10f}\n")
 
     try:
-        response = client.chat.completions.create(
+        response = together.Complete.create(
+            prompt=prompt,
             model=model,
-            messages=[{"role": "user", "content": prompt}],
+            max_tokens=512,
+            temperature=0.7,
+            top_k=50,
+            top_p=0.7,
+            repetition_penalty=1.1,
         )
-        content = response.choices[0].message.content
-        
-        # Safety check for empty responses
+
+        content = response['output']['choices'][0]['text']
+
         if not content or len(content.strip()) < 10:
             print(f"Warning: LLM returned empty or very short response: '{content}'")
             return "The LLM response was too short or empty. Please try again with more detailed input."
-        return content
+        return content.strip()
     except Exception as e:
         print(f"Error calling LLM API: {str(e)}")
         return "An error occurred while generating content. Please check your API key and try again."
@@ -480,7 +486,6 @@ def save_to_html(job_desc, company_info, resume, company_name, position_title, c
     """Generate HTML content for download."""
     # Get current date and time
     current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    file_name = f"interview_summary_{current_time}.html"
     
     html_content = f"""
     <html>
@@ -679,15 +684,15 @@ def save_to_html(job_desc, company_info, resume, company_name, position_title, c
                 <div class="score-section">
                     <div class="score-item">
                         <div class="score-title">Clarity</div>
-                        <div class="stars">{"★" * int(feedback.split('Clarity:')[1].split('/')[0].strip() if 'Clarity:' in feedback else 5) + "☆" * (10 - int(feedback.split('Clarity:')[1].split('/')[0].strip() if 'Clarity:' in feedback else 5))}</div>
+                        <div class="stars">{"★" * 5 + "☆" * 5}</div>
                     </div>
                     <div class="score-item">
                         <div class="score-title">Relevance</div>
-                        <div class="stars">{"★" * int(feedback.split('Relevance:')[1].split('/')[0].strip() if 'Relevance:' in feedback else 5) + "☆" * (10 - int(feedback.split('Relevance:')[1].split('/')[0].strip() if 'Relevance:' in feedback else 5))}</div>
+                        <div class="stars">{"★" * 5 + "☆" * 5}</div>
                     </div>
                     <div class="score-item">
                         <div class="score-title">Confidence</div>
-                        <div class="stars">{"★" * int(feedback.split('Confidence:')[1].split('/')[0].strip() if 'Confidence:' in feedback else 5) + "☆" * (10 - int(feedback.split('Confidence:')[1].split('/')[0].strip() if 'Confidence:' in feedback else 5))}</div>
+                        <div class="stars">{"★" * 5 + "☆" * 5}</div>
                     </div>
                 </div>
                 
@@ -925,26 +930,32 @@ def save_to_html_endpoint():
     tech_skills = data.get('tech_skills', '')
     soft_skills = data.get('soft_skills', '')
     job_duties = data.get('job_duties', '')
+    
     selected_question = data.get('selected_question', '')
     answer_text = data.get('answer_text', '')
     feedback = data.get('feedback', '')
     model_answer = data.get('model_answer', '')
     follow_up_questions = data.get('follow_up_questions', [])
+    
     # Retrieve company name and position title from parsed info if available
     parsed_info = session.get('parsed_info', {})
     company_name = data.get('company_name', parsed_info.get('company_name', ''))
     position_title = data.get('position_title', parsed_info.get('position_title', ''))
     
-    html_file_path = save_to_html(
-        job_desc, company_info, resume, company_name, position_title, company_values, tech_skills, 
-        soft_skills, job_duties, selected_question, answer_text, feedback, model_answer, follow_up_questions
-    )
-    
-    # Generate a unique ID for this file for the frontend to request it
-    file_id = str(uuid.uuid4())
-    session[f'html_file_{file_id}'] = html_file_path
-    
-    return jsonify({'file_id': file_id})
+    try:
+        html_file_path = save_to_html(
+            job_desc, company_info, resume, company_name, position_title, company_values, tech_skills, 
+            soft_skills, job_duties, selected_question, answer_text, feedback, model_answer, follow_up_questions
+        )
+        
+        # Generate a unique ID for this file for the frontend to request it
+        file_id = str(uuid.uuid4())
+        session[f'html_file_{file_id}'] = html_file_path
+        
+        return jsonify({'file_id': file_id})
+    except Exception as e:
+        print(f"Error saving to HTML: {str(e)}")
+        return jsonify({'error': 'An error occurred while generating the HTML file'}), 500
 
 @app.route('/download-html/<file_id>', methods=['GET'])
 def download_html(file_id):

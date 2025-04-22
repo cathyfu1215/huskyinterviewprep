@@ -1,0 +1,984 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Husky Interview Prep</title>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f5f5f0;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(to right, #006241, #1E3932);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: 0;
+            animation: float 6s ease-in-out infinite;
+            opacity: 0.2;
+        }
+        
+        .orb-1 {
+            width: 300px;
+            height: 300px;
+            background: #006241;
+            top: -150px;
+            right: -100px;
+            animation-delay: 0s;
+        }
+        
+        .orb-2 {
+            width: 250px;
+            height: 250px;
+            background: #1E3932;
+            bottom: -100px;
+            left: -50px;
+            animation-delay: 3s;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        .tab-active {
+            background-color: #006241;
+            color: white;
+        }
+        
+        .question-card {
+            transition: all 0.3s ease;
+            border: 1px solid #E5E5E0;
+        }
+        
+        .question-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+            border-color: #D4E9E2;
+        }
+        
+        .btn-primary {
+            background-color: #006241;
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background-color: #1E3932;
+            transform: translateY(-1px);
+        }
+        
+        .btn-secondary {
+            background-color: #f5f5f0;
+            color: #1E3932;
+            border: 1px solid #D4E9E2;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #E5E5E0;
+            transform: translateY(-1px);
+        }
+        
+        .star-rating {
+            display: inline-block;
+        }
+        
+        .recording-pulse {
+            position: relative;
+        }
+        
+        .recording-pulse::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background-color: rgba(0, 98, 65, 0.3);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+        
+        .section-enter {
+            transition: all 0.5s ease;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        
+        .section-enter-active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* Star colors using Starbucks-inspired palette */
+        .star-1, .star-2, .star-3, .star-4, .star-5, 
+        .star-6, .star-7, .star-8, .star-9, .star-10 { 
+            color: #006241; 
+        }
+        .star-empty { color: #D4E9E2; }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen" x-data="app()">
+        <!-- Header -->
+        <header class="gradient-bg py-12 px-4 relative overflow-hidden">
+            <div class="orb orb-1"></div>
+            <div class="orb orb-2"></div>
+            <div class="container relative z-10">
+                <div class="text-center">
+                    <div class="inline-block px-4 py-2 rounded-full bg-white/10 backdrop-blur-lg border border-white/20 mb-6">
+                        <span class="inline-block w-2 h-2 rounded-full bg-white mr-2"></span>
+                        <span class="text-white text-sm font-medium">AI-Powered Interview Prep</span>
+                    </div>
+                    <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">Husky Interview Prep</h1>
+                    <p class="text-xl text-white/80 max-w-2xl mx-auto">Master your interview with confidence. AI-powered preparation for job seekers.</p>
+                </div>
+            </div>
+        </header>
+        
+        <!-- Main Content -->
+        <main class="container px-4 py-8">
+            <!-- Step 1: Enter Information -->
+            <section class="bg-white rounded-xl shadow-md p-6 mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-50 text-green-800 mr-3">1</span>
+                    Enter Your Information
+                </h2>
+                <div class="flex flex-col gap-4 max-w-3xl mx-auto">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Job Description</label>
+                        <textarea x-model="jobDesc" class="w-full h-32 px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-700 focus:border-green-700" placeholder="Paste the job description here..."></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Company Information</label>
+                        <textarea x-model="companyInfo" class="w-full h-32 px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-700 focus:border-green-700" placeholder="Enter information about the company..."></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Your Resume</label>
+                        <textarea x-model="resume" class="w-full h-32 px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-700 focus:border-green-700" placeholder="Paste your resume or relevant experience here..."></textarea>
+                    </div>
+                </div>
+                
+                <div class="mt-6 flex justify-center">
+                    <button @click="analyzeInfo()" :disabled="isAnalyzing" class="btn-primary px-6 py-3 rounded-lg font-medium flex items-center">
+                        <span class="spinner" x-show="isAnalyzing"></span>
+                        <i class="fas fa-search mr-2" x-show="!isAnalyzing"></i>
+                        <span x-text="isAnalyzing ? 'Analyzing...' : 'Analyze Information'"></span>
+                    </button>
+                </div>
+                
+                <template x-if="parsedInfo.company_values">
+                    <div class="mt-8">
+                        <!-- Add new section for company name and position title -->
+                        <div class="grid md:grid-cols-2 gap-6 mb-8">
+                            <div class="bg-green-50 p-4 rounded-lg border border-green-100">
+                                <h3 class="font-semibold text-gray-800 mb-2">Company Name</h3>
+                                <p class="text-gray-700" x-text="parsedInfo.company_name"></p>
+                            </div>
+                            <div class="bg-green-50 p-4 rounded-lg border border-green-100">
+                                <h3 class="font-semibold text-gray-800 mb-2">Position Title</h3>
+                                <p class="text-gray-700" x-text="parsedInfo.position_title"></p>
+                            </div>
+                        </div>
+                        
+                        <!-- Existing grid for other information -->
+                        <div class="grid md:grid-cols-2 gap-6 mb-8">
+                            <div class="bg-green-50 p-4 rounded-lg border border-green-100">
+                                <h3 class="font-semibold text-gray-800 mb-2">Company Values</h3>
+                                <ul class="list-disc pl-5 space-y-1 text-gray-700">
+                                    <template x-for="(line, index) in parsedInfo.company_values.split('- ').filter(item => item.trim().length > 0)" :key="index">
+                                        <li x-text="line.trim()"></li>
+                                    </template>
+                                </ul>
+                            </div>
+                            <div class="bg-green-50 p-4 rounded-lg border border-green-100">
+                                <h3 class="font-semibold text-gray-800 mb-2">Job Duties</h3>
+                                <ul class="list-disc pl-5 space-y-1 text-gray-700">
+                                    <template x-for="(line, index) in parsedInfo.job_duties.split('- ').filter(item => item.trim().length > 0)" :key="index">
+                                        <li x-text="line.trim()"></li>
+                                    </template>
+                                </ul>
+                            </div>
+                            <div class="bg-green-50 p-4 rounded-lg border border-green-100">
+                                <h3 class="font-semibold text-gray-800 mb-2">Tech Skills</h3>
+                                <ul class="list-disc pl-5 space-y-1 text-gray-700">
+                                    <template x-for="(line, index) in parsedInfo.tech_skills.split('- ').filter(item => item.trim().length > 0)" :key="index">
+                                        <li x-text="line.trim()"></li>
+                                    </template>
+                                </ul>
+                            </div>
+                            <div class="bg-green-50 p-4 rounded-lg border border-green-100">
+                                <h3 class="font-semibold text-gray-800 mb-2">Soft Skills</h3>
+                                <ul class="list-disc pl-5 space-y-1 text-gray-700">
+                                    <template x-for="(line, index) in parsedInfo.soft_skills.split('- ').filter(item => item.trim().length > 0)" :key="index">
+                                        <li x-text="line.trim()"></li>
+                                    </template>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-center">
+                            <button @click="generateQuestions()" :disabled="isGeneratingQuestions" class="btn-primary px-6 py-3 rounded-lg font-medium flex items-center">
+                                <span class="spinner" x-show="isGeneratingQuestions"></span>
+                                <i class="fas fa-list-ul mr-2" x-show="!isGeneratingQuestions"></i>
+                                <span x-text="isGeneratingQuestions ? 'Generating...' : 'Generate Interview Questions'"></span>
+                            </button>
+                        </div>
+                    </div>
+                </template>
+            </section>
+            
+            <!-- Step 2: Practice Questions -->
+            <section x-show="questionsGenerated" class="bg-white rounded-xl shadow-md p-6 mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-50 text-green-800 mr-3">2</span>
+                    Practice Questions
+                </h2>
+                
+                <!-- Question Category Tabs -->
+                <div class="mb-6">
+                    <div class="flex flex-wrap space-x-2 border-b border-gray-200">
+                        <template x-for="(category, index) in Object.keys(questions)" :key="index">
+                            <button 
+                                @click="activeCategory = category" 
+                                :class="{'tab-active': activeCategory === category}"
+                                class="px-4 py-2 rounded-t-lg font-medium transition-all duration-200"
+                                x-text="category"
+                            ></button>
+                        </template>
+                    </div>
+                </div>
+                
+                <!-- Questions for Selected Category -->
+                <div>
+                    <template x-for="(categoryQuestions, category) in questions" :key="category">
+                        <div x-show="activeCategory === category">
+                            <template x-for="(question, qIndex) in categoryQuestions" :key="qIndex">
+                                <div 
+                                    @click="selectQuestion(question)"
+                                    class="question-card p-4 rounded-lg border border-gray-200 bg-gray-50 mb-3 cursor-pointer hover:bg-indigo-50 hover:border-indigo-200"
+                                    :class="{'border-indigo-500 bg-indigo-50': selectedQuestion === question}"
+                                >
+                                    <p class="text-gray-800" x-text="question"></p>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+            </section>
+            
+            <!-- Step 3: Record Answer -->
+            <section x-show="selectedQuestion" class="bg-white rounded-xl shadow-md p-6 mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-50 text-green-800 mr-3">3</span>
+                    Record Your Answer
+                </h2>
+                
+                <!-- New company and position box with better alignment -->
+                <div class="bg-green-50 p-4 rounded-lg border border-green-100 mb-6">
+                    <div class="flex flex-row items-center justify-start">
+                        <div class="flex items-center mr-8">
+                            <span class="text-sm font-medium text-gray-600">Company:</span>
+                            <span class="ml-2 font-semibold text-green-800" x-text="parsedInfo.company_name || 'Not specified'"></span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-sm font-medium text-gray-600">Position:</span>
+                            <span class="ml-2 font-semibold text-green-800" x-text="parsedInfo.position_title || 'Not specified'"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- New grid layout for interview question and recording section -->
+                <div class="grid md:grid-cols-12 gap-4 mb-6">
+                    <!-- Interviewer Column (35% width) -->
+                    <div class="md:col-span-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Interviewer</label>
+                        <div class="text-center p-4 bg-green-50 rounded-lg border border-green-100 h-full">
+                            <div class="rounded-lg overflow-hidden mb-4 mx-auto w-32 h-32 flex items-center justify-center bg-gray-100">
+                                <img src="/static/interviewer.png" alt="Interviewer" class="max-w-full max-h-full">
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Voice Accent</label>
+                                <select x-model="voiceOption" class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-700 focus:border-green-700">
+                                    <option value="US English">US English</option>
+                                    <option value="UK English">UK English</option>
+                                    <option value="Australian English">Australian English</option>
+                                    <option value="Indian English">Indian English</option>
+                                    <option value="French">French</option>
+                                    <option value="German">German</option>
+                                    <option value="Spanish">Spanish</option>
+                                </select>
+                            </div>
+                            
+                            <button @click="readQuestionAloud()" :disabled="isReadingAloud" class="btn-secondary w-full px-3 py-2 text-sm rounded-lg font-medium flex items-center justify-center">
+                                <span class="spinner" x-show="isReadingAloud"></span>
+                                <i class="fas fa-volume-up mr-2" x-show="!isReadingAloud"></i>
+                                <span x-text="isReadingAloud ? 'Reading...' : 'Read Question Aloud'"></span>
+                            </button>
+                            
+                            <div x-show="audioPlaying" class="mt-4">
+                                <audio x-ref="audioPlayer" controls class="w-full">
+                                    Your browser does not support the audio element.
+                                </audio>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Question Column (65% width) -->
+                    <div class="md:col-span-8">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Current Question</label>
+                        <div class="p-4 bg-green-50 rounded-lg border border-green-100">
+                            <p class="text-gray-800 font-medium" x-text="selectedQuestion"></p>
+                        </div>
+                        
+                        <div class="mt-4 p-4 bg-green-50 rounded-lg border border-green-100">
+                            <h3 class="font-medium text-gray-800 mb-2">How to Answer</h3>
+                            <p class="text-gray-700" x-text="questionHints[selectedQuestion] || 'No specific hint available for this question.'"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Record Answer Section in 35:65 ratio layout -->
+                <div class="grid md:grid-cols-12 gap-4">
+                    <!-- Recording Button Column (35% width) -->
+                    <div class="md:col-span-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Record Your Answer</label>
+                        <div class="flex flex-col items-center justify-center h-full p-4 bg-green-50 rounded-lg border border-green-100">
+                            <button @click="toggleRecording()" class="mb-4 relative">
+                                <div :class="{'recording-pulse': isRecording}" class="w-16 h-16 rounded-full bg-white border-2 border-gray-300 flex items-center justify-center">
+                                    <i :class="isRecording ? 'fa-stop text-red-500' : 'fa-microphone text-gray-700'" class="fas text-2xl"></i>
+                                </div>
+                            </button>
+                            <p x-text="recordingStatus" class="text-sm font-medium text-gray-600 text-center"></p>
+                        </div>
+                    </div>
+                    
+                    <!-- Transcription Textarea Column (65% width) -->
+                    <div class="md:col-span-8">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Your Answer (Transcribed)</label>
+                        <textarea 
+                            x-model="answerText" 
+                            class="w-full h-40 px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" 
+                            placeholder="Your transcribed answer will appear here..."
+                        ></textarea>
+                    </div>
+                </div>
+                
+                <div class="mt-6 flex justify-center">
+                    <button @click="analyzeAnswer()" :disabled="isAnalyzingAnswer" class="btn-primary px-6 py-3 rounded-lg font-medium flex items-center">
+                        <span class="spinner" x-show="isAnalyzingAnswer"></span>
+                        <i class="fas fa-chart-line mr-2" x-show="!isAnalyzingAnswer"></i>
+                        <span x-text="isAnalyzingAnswer ? 'Analyzing...' : 'Analyze Answer'"></span>
+                    </button>
+                </div>
+            </section>
+            
+            <!-- Step 4: Review Analysis -->
+            <section x-show="feedbackText" class="bg-white rounded-xl shadow-md p-6 mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-50 text-green-800 mr-3">4</span>
+                    Review Analysis
+                </h2>
+                
+                <div x-show="scores" class="grid md:grid-cols-3 gap-4 mb-6">
+                    <div class="bg-green-50 p-4 rounded-lg border border-green-100">
+                        <h3 class="font-semibold text-gray-800 mb-2">Clarity</h3>
+                        <div class="text-2xl">
+                            <template x-for="i in 10" :key="i">
+                                <span :class="i <= scores.clarity ? `star-${i}` : 'star-empty'"
+                                      x-text="i <= scores.clarity ? '★' : '☆'"></span>
+                            </template>
+                        </div>
+                        <p class="text-sm text-gray-600 mt-1">Score: <span x-text="scores.clarity"></span>/10</p>
+                    </div>
+                    <div class="bg-green-50 p-4 rounded-lg border border-green-100">
+                        <h3 class="font-semibold text-gray-800 mb-2">Relevance</h3>
+                        <div class="text-2xl">
+                            <template x-for="i in 10" :key="i">
+                                <span :class="i <= scores.relevance ? `star-${i}` : 'star-empty'"
+                                      x-text="i <= scores.relevance ? '★' : '☆'"></span>
+                            </template>
+                        </div>
+                        <p class="text-sm text-gray-600 mt-1">Score: <span x-text="scores.relevance"></span>/10</p>
+                    </div>
+                    <div class="bg-green-50 p-4 rounded-lg border border-green-100">
+                        <h3 class="font-semibold text-gray-800 mb-2">Confidence</h3>
+                        <div class="text-2xl">
+                            <template x-for="i in 10" :key="i">
+                                <span :class="i <= scores.confidence ? `star-${i}` : 'star-empty'"
+                                      x-text="i <= scores.confidence ? '★' : '☆'"></span>
+                            </template>
+                        </div>
+                        <p class="text-sm text-gray-600 mt-1">Score: <span x-text="scores.confidence"></span>/10</p>
+                    </div>
+                </div>
+                
+                <div class="bg-green-50 p-6 rounded-lg border border-green-100">
+                    <h3 class="font-semibold text-gray-800 mb-3">Detailed Feedback</h3>
+                    <div class="prose max-w-none text-gray-700 whitespace-pre-line leading-relaxed" 
+                         x-text="feedbackText"></div>
+                </div>
+            </section>
+            
+            <!-- Step 5: Get Model Answer -->
+            <section x-show="feedbackText" class="bg-white rounded-xl shadow-md p-6 mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-50 text-green-800 mr-3">5</span>
+                    Get Model Answer
+                </h2>
+                
+                <button @click="generateModelAnswer()" :disabled="isGeneratingModel" class="btn-primary px-6 py-3 rounded-lg font-medium flex items-center mb-6">
+                    <span class="spinner" x-show="isGeneratingModel"></span>
+                    <i class="fas fa-magic mr-2" x-show="!isGeneratingModel"></i>
+                    <span x-text="isGeneratingModel ? 'Generating...' : 'Generate Model Answer'"></span>
+                </button>
+                
+                <template x-if="modelAnswer">
+                    <div class="bg-green-50 p-6 rounded-lg border border-green-100">
+                        <h3 class="font-semibold text-gray-800 mb-3">Sample Professional Answer</h3>
+                        <div class="prose max-w-none text-gray-700 whitespace-pre-line leading-relaxed" 
+                             x-text="modelAnswer"></div>
+                    </div>
+                </template>
+            </section>
+            
+            <!-- Step 5.5: Follow-up Questions -->
+            <section x-show="feedbackText && modelAnswer" class="bg-white rounded-xl shadow-md p-6 mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-50 text-green-800 mr-3">5.5</span>
+                    Potential Follow-up Questions
+                </h2>
+                
+                <button @click="generateFollowUpQuestions()" :disabled="isGeneratingFollowUp" class="btn-primary px-6 py-3 rounded-lg font-medium flex items-center mb-6">
+                    <span class="spinner" x-show="isGeneratingFollowUp"></span>
+                    <i class="fas fa-question-circle mr-2" x-show="!isGeneratingFollowUp"></i>
+                    <span x-text="isGeneratingFollowUp ? 'Generating...' : 'Generate Follow-up Questions'"></span>
+                </button>
+                
+                <template x-if="followUpQuestions && followUpQuestions.length > 0">
+                    <div class="bg-green-50 p-6 rounded-lg border border-green-100">
+                        <h3 class="font-semibold text-gray-800 mb-3">Questions the Interviewer Might Ask Next</h3>
+                        <ul class="space-y-3 text-gray-700 list-disc pl-6">
+                            <template x-for="(question, index) in followUpQuestions" :key="index">
+                                <li class="prose max-w-none leading-relaxed" x-text="question"></li>
+                            </template>
+                        </ul>
+                    </div>
+                </template>
+            </section>
+            
+            <!-- Step 6: Save Work -->
+            <section x-show="feedbackText && modelAnswer" class="bg-white rounded-xl shadow-md p-6 mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-50 text-green-800 mr-3">6</span>
+                    Save Your Work
+                </h2>
+                
+                <button @click="saveToHTML()" :disabled="isSaving" class="btn-primary px-6 py-3 rounded-lg font-medium flex items-center">
+                    <span class="spinner" x-show="isSaving"></span>
+                    <i class="fas fa-download mr-2" x-show="!isSaving"></i>
+                    <span x-text="isSaving ? 'Saving...' : 'Save as HTML'"></span>
+                </button>
+                
+                <template x-if="downloadLink">
+                    <div class="mt-6 p-4 bg-green-50 border border-green-100 rounded-lg">
+                        <p class="text-green-800 mb-3">Your file is ready to download!</p>
+                        <a :href="downloadLink" class="btn-primary px-6 py-3 rounded-lg font-medium inline-flex items-center" download>
+                            <i class="fas fa-cloud-download-alt mr-2"></i> Download File
+                        </a>
+                    </div>
+                </template>
+            </section>
+            
+            <!-- Step 7: Continue or Start New -->
+            <section x-show="feedbackText && modelAnswer" class="bg-white rounded-xl shadow-md p-6 mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-50 text-green-800 mr-3">7</span>
+                    Continue Your Practice
+                </h2>
+                
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="bg-green-50 p-6 rounded-lg border border-green-100 text-center">
+                        <h3 class="font-semibold text-gray-800 mb-4">Practice Another Question</h3>
+                        <p class="text-gray-600 mb-4">Continue practicing with the same job information and try another interview question.</p>
+                        <button @click="practiceAnotherQuestion()" class="btn-primary px-6 py-3 rounded-lg font-medium">
+                            <i class="fas fa-redo mr-2"></i> Try Another Question
+                        </button>
+                    </div>
+                    
+                    <div class="bg-green-50 p-6 rounded-lg border border-green-100 text-center">
+                        <h3 class="font-semibold text-gray-800 mb-4">Start Fresh</h3>
+                        <p class="text-gray-600 mb-4">Clear all data and start over with a different company or position.</p>
+                        <button @click="startOver()" class="btn-secondary px-6 py-3 rounded-lg font-medium">
+                            <i class="fas fa-sync mr-2"></i> Start New Practice
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
+        
+        <!-- Footer -->
+        <footer class="bg-green-900 py-8 px-4 text-center">
+            <div class="container">
+                <p class="text-green-100">Husky Interview Prep © 2025. All rights reserved.</p>
+                <p class="text-green-200 text-sm mt-2">Powered by Cathy and AI and created to help you succeed.</p>
+            </div>
+        </footer>
+    </div>
+    
+    <script>
+        function app() {
+            return {
+                jobDesc: '',
+                companyInfo: '',
+                resume: '',
+                parsedInfo: {},
+                
+                // Questions
+                questions: {},
+                questionHints: {},
+                activeCategory: 'Introduction',
+                selectedQuestion: '',
+                questionsGenerated: false,
+                
+                // Loading states
+                isAnalyzing: false,
+                isGeneratingQuestions: false,
+                isReadingAloud: false,
+                isTranscribing: false,
+                isAnalyzingAnswer: false,
+                isGeneratingModel: false,
+                isSaving: false,
+                
+                // Recording
+                isRecording: false,
+                recorder: null,
+                audioChunks: [],
+                recordingStatus: 'Click to start recording',
+                answerText: '',
+                
+                // Analysis
+                scores: null,
+                feedbackText: '',
+                modelAnswer: '',
+                
+                // Follow-up questions
+                followUpQuestions: [],
+                isGeneratingFollowUp: false,
+                
+                // Audio playback
+                voiceOption: 'US English',
+                audioSrc: '',
+                audioPlaying: false,
+                
+                // Download
+                downloadLink: '',
+                
+                async analyzeInfo() {
+                    if (!this.jobDesc || !this.companyInfo) {
+                        alert('Please enter job description and company information.');
+                        return;
+                    }
+                    
+                    this.isAnalyzing = true;  // Start loading indicator
+                    
+                    try {
+                        const response = await fetch('/analyze-info', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                job_desc: this.jobDesc,
+                                company_info: this.companyInfo
+                            }),
+                        });
+                        
+                        this.parsedInfo = await response.json();
+                    } catch (error) {
+                        console.error('Error analyzing information:', error);
+                        alert('Error analyzing information. Please try again.');
+                    } finally {
+                        this.isAnalyzing = false;  // Stop loading indicator
+                    }
+                },
+                
+                async generateQuestions() {
+                    if (!this.jobDesc) {
+                        alert('Please enter at least the job description.');
+                        return;
+                    }
+                    
+                    this.isGeneratingQuestions = true;  // Start loading indicator
+                    
+                    try {
+                        const response = await fetch('/generate-questions', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                job_desc: this.jobDesc,
+                                company_info: this.companyInfo,
+                                resume: this.resume
+                            }),
+                        });
+                        
+                        const data = await response.json();
+                        this.questions = data.questions;
+                        this.questionHints = data.hints;
+                        this.questionsGenerated = true;
+                        
+                        // Set default active category to the first one
+                        if (Object.keys(this.questions).length > 0) {
+                            this.activeCategory = Object.keys(this.questions)[0];
+                        }
+                    } catch (error) {
+                        console.error('Error generating questions:', error);
+                        alert('Error generating questions. Please try again.');
+                    } finally {
+                        this.isGeneratingQuestions = false;  // Stop loading indicator
+                    }
+                },
+                
+                selectQuestion(question) {
+                    this.selectedQuestion = question;
+                    // Reset related data
+                    this.answerText = '';
+                    this.scores = null;
+                    this.feedbackText = '';
+                    this.modelAnswer = '';
+                    this.audioSrc = '';
+                    this.audioPlaying = false;
+                },
+                
+                async readQuestionAloud() {
+                    if (!this.selectedQuestion) return;
+                    
+                    this.isReadingAloud = true;  // Start loading indicator
+                    
+                    try {
+                        const response = await fetch('/text-to-speech', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                text: this.selectedQuestion,
+                                voice_option: this.voiceOption
+                            }),
+                        });
+                        
+                        const data = await response.json();
+                        if (data.audio) {
+                            this.audioSrc = data.audio;
+                            this.audioPlaying = true;
+                            
+                            // Give DOM time to update before accessing the audio element
+                            setTimeout(() => {
+                                const audio = this.$refs.audioPlayer;
+                                if (audio) {
+                                    audio.src = data.audio;
+                                    audio.load();
+                                    audio.play().catch(e => console.error('Error playing audio:', e));
+                                }
+                            }, 100);
+                        }
+                    } catch (error) {
+                        console.error('Error reading question aloud:', error);
+                        alert('Error reading question aloud. Please try again.');
+                    } finally {
+                        this.isReadingAloud = false;  // Stop loading indicator
+                    }
+                },
+                
+                toggleRecording() {
+                    if (this.isRecording) {
+                        this.stopRecording();
+                    } else {
+                        this.startRecording();
+                    }
+                },
+                
+                async startRecording() {
+                    try {
+                        // Set audio constraints for better compatibility
+                        const stream = await navigator.mediaDevices.getUserMedia({
+                            audio: {
+                                channelCount: 1,
+                                sampleRate: 16000,
+                                sampleSize: 16,
+                                echoCancellation: true,
+                                noiseSuppression: true
+                            }
+                        });
+                        
+                        this.recorder = new MediaRecorder(stream, {
+                            mimeType: 'audio/webm' // More widely supported in browsers
+                        });
+                        this.audioChunks = [];
+                        
+                        this.recorder.ondataavailable = (e) => {
+                            if (e.data.size > 0) {
+                                this.audioChunks.push(e.data);
+                            }
+                        };
+                        
+                        this.recorder.onstop = async () => {
+                            const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
+                            const reader = new FileReader();
+                            reader.readAsDataURL(audioBlob);
+                            
+                            reader.onload = async () => {
+                                const base64Audio = reader.result;
+                                
+                                try {
+                                    const response = await fetch('/speech-to-text', {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                        },
+                                        body: JSON.stringify({ audio: base64Audio }),
+                                    });
+                                    
+                                    const data = await response.json();
+                                    this.answerText = data.text;
+                                    this.recordingStatus = 'Recording transcribed';
+                                } catch (error) {
+                                    console.error('Error transcribing audio:', error);
+                                    this.recordingStatus = 'Error transcribing audio';
+                                } finally {
+                                    this.isTranscribing = false;  // Stop transcribing indicator
+                                }
+                            };
+                        };
+                        
+                        this.recorder.start();
+                        this.isRecording = true;
+                        this.recordingStatus = 'Recording... Click to stop';
+                    } catch (error) {
+                        console.error('Error starting recording:', error);
+                        this.recordingStatus = 'Error accessing microphone';
+                    }
+                },
+                
+                stopRecording() {
+                    if (this.recorder && this.recorder.state !== 'inactive') {
+                        this.recorder.stop();
+                        this.isRecording = false;
+                        this.isTranscribing = true;  // Start transcribing indicator
+                        this.recordingStatus = 'Processing...';
+                        
+                        // Stop all audio tracks
+                        this.recorder.stream.getTracks().forEach(track => track.stop());
+                    }
+                },
+                
+                async analyzeAnswer() {
+                    if (!this.answerText) {
+                        alert('Please record or enter an answer to analyze.');
+                        return;
+                    }
+                    
+                    this.isAnalyzingAnswer = true;  // Start loading indicator
+                    
+                    try {
+                        const response = await fetch('/analyze-answer', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                answer_text: this.answerText,
+                                job_desc: this.jobDesc,
+                                company_values: this.parsedInfo.company_values
+                            }),
+                        });
+                        
+                        const data = await response.json();
+                        // Ensure scores are properly initialized with numeric values
+                        this.scores = {
+                            clarity: parseInt(data.scores.clarity) || 0,
+                            relevance: parseInt(data.scores.relevance) || 0,
+                            confidence: parseInt(data.scores.confidence) || 0
+                        };
+                        this.feedbackText = data.feedback;
+                    } catch (error) {
+                        console.error('Error analyzing answer:', error);
+                        alert('Error analyzing answer. Please try again.');
+                    } finally {
+                        this.isAnalyzingAnswer = false;  // Stop loading indicator
+                    }
+                },
+                
+                async generateModelAnswer() {
+                    if (!this.selectedQuestion) {
+                        alert('Please select a question first.');
+                        return;
+                    }
+                    
+                    this.isGeneratingModel = true;  // Start loading indicator
+                    
+                    try {
+                        const response = await fetch('/generate-model-answer', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                question: this.selectedQuestion,
+                                company_info: this.companyInfo,
+                                job_desc: this.jobDesc,
+                                resume: this.resume,
+                                answer_text: this.answerText
+                            }),
+                        });
+                        
+                        const data = await response.json();
+                        this.modelAnswer = data.model_answer;
+                    } catch (error) {
+                        console.error('Error generating model answer:', error);
+                        alert('Error generating model answer. Please try again.');
+                    } finally {
+                        this.isGeneratingModel = false;  // Stop loading indicator
+                    }
+                },
+                
+                async saveToHTML() {
+                    this.isSaving = true;
+                    
+                    try {
+                        const response = await fetch('/save-to-html', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                job_desc: this.jobDesc,
+                                company_info: this.companyInfo,
+                                resume: this.resume,
+                                company_name: this.parsedInfo.company_name,
+                                position_title: this.parsedInfo.position_title,
+                                company_values: this.parsedInfo.company_values,
+                                tech_skills: this.parsedInfo.tech_skills,
+                                soft_skills: this.parsedInfo.soft_skills,
+                                job_duties: this.parsedInfo.job_duties,
+                                selected_question: this.selectedQuestion,
+                                answer_text: this.answerText,
+                                feedback: this.feedbackText,
+                                model_answer: this.modelAnswer,
+                                follow_up_questions: this.followUpQuestions
+                            }),
+                        });
+                        
+                        const data = await response.json();
+                        this.downloadLink = `/download-html/${data.file_id}`;
+                    } catch (error) {
+                        console.error('Error saving to HTML:', error);
+                        alert('Error saving to HTML. Please try again.');
+                    } finally {
+                        this.isSaving = false;
+                    }
+                },
+                
+                practiceAnotherQuestion() {
+                    // Reset answer-related data but keep job info
+                    this.selectedQuestion = '';
+                    this.answerText = '';
+                    this.scores = null;
+                    this.feedbackText = '';
+                    this.modelAnswer = '';
+                    this.followUpQuestions = [];
+                    this.audioSrc = '';
+                    this.audioPlaying = false;
+                    this.downloadLink = '';
+                    
+                    // Scroll to the questions section
+                    document.querySelector('section:nth-of-type(2)').scrollIntoView({ behavior: 'smooth' });
+                },
+                
+                startOver() {
+                    // Reset everything
+                    this.jobDesc = '';
+                    this.companyInfo = '';
+                    this.resume = '';
+                    this.parsedInfo = {};
+                    this.questions = {};
+                    this.questionHints = {};
+                    this.activeCategory = 'Introduction';
+                    this.selectedQuestion = '';
+                    this.questionsGenerated = false;
+                    this.answerText = '';
+                    this.scores = null;
+                    this.feedbackText = '';
+                    this.modelAnswer = '';
+                    this.followUpQuestions = [];
+                    this.audioSrc = '';
+                    this.audioPlaying = false;
+                    this.downloadLink = '';
+                    
+                    // Scroll to top
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                },
+                
+                async generateFollowUpQuestions() {
+                    if (!this.selectedQuestion) {
+                        alert('Please select a question first.');
+                        return;
+                    }
+                    
+                    this.isGeneratingFollowUp = true;  // Start loading indicator
+                    
+                    try {
+                        const response = await fetch('/generate-follow-up-questions', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                question: this.selectedQuestion,
+                                job_desc: this.jobDesc,
+                                resume: this.resume,
+                                answer_text: this.answerText
+                            }),
+                        });
+                        
+                        const data = await response.json();
+                        this.followUpQuestions = data.follow_up_questions;
+                    } catch (error) {
+                        console.error('Error generating follow-up questions:', error);
+                        alert('Error generating follow-up questions. Please try again.');
+                    } finally {
+                        this.isGeneratingFollowUp = false;  // Stop loading indicator
+                    }
+                }
+            };
+        }
+    </script>
+</body>
+</html>
+        
